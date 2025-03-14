@@ -39,6 +39,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization();
 builder.Services.AddScoped<JwtHelper>();
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<UserService>();
 
 var app = builder.Build();
 
@@ -49,5 +50,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
+
 
 
