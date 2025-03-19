@@ -8,6 +8,9 @@ namespace AirportAdmin.API.Helpers;
 
 public class JwtHelper(IConfiguration config)
 {
+    public static int GetUserId(HttpContext context) =>
+        int.Parse(context.User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
     public string GenerateToken(User user)
     {
         var secret = Environment.GetEnvironmentVariable("JWT_SECRET")
@@ -33,3 +36,4 @@ public class JwtHelper(IConfiguration config)
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 }
+
