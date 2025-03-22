@@ -41,6 +41,7 @@ builder.Services.AddScoped<JwtHelper>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<LeaveService>();
+builder.Services.AddScoped<ShiftCoverService>();
 
 var app = builder.Build();
 
@@ -51,6 +52,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
+
 
 
 

@@ -1,0 +1,26 @@
+using System.ComponentModel.DataAnnotations;
+
+namespace AirportAdmin.API.DTOs;
+
+public class ApplyShiftCoverRequest
+{
+    [Required] public DateOnly ShiftDate { get; set; }
+    [Required] public TimeOnly ShiftStartTime { get; set; }
+    [Required] public TimeOnly ShiftEndTime { get; set; }
+    [Required] public string Reason { get; set; } = string.Empty;
+}
+
+public class ShiftCoverResponse
+{
+    public int Id { get; set; }
+    public int RequesterId { get; set; }
+    public string RequesterFullName { get; set; } = string.Empty;
+    public int? CoveredById { get; set; }
+    public string? CoveredByFullName { get; set; }
+    public DateOnly ShiftDate { get; set; }
+    public TimeOnly ShiftStartTime { get; set; }
+    public TimeOnly ShiftEndTime { get; set; }
+    public string Reason { get; set; } = string.Empty;
+    public string Status { get; set; } = string.Empty;
+    public DateTime CreatedAt { get; set; }
+}

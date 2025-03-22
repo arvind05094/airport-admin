@@ -57,6 +57,49 @@ namespace AirportAdmin.API.Migrations
                     b.ToTable("LeaveRequests");
                 });
 
+            modelBuilder.Entity("AirportAdmin.API.Entities.ShiftCoverRequest", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("CoveredById")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("RequesterId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateOnly>("ShiftDate")
+                        .HasColumnType("date");
+
+                    b.Property<TimeOnly>("ShiftEndTime")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<TimeOnly>("ShiftStartTime")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CoveredById");
+
+                    b.HasIndex("RequesterId");
+
+                    b.ToTable("ShiftCoverRequests");
+                });
+
             modelBuilder.Entity("AirportAdmin.API.Entities.User", b =>
                 {
                     b.Property<int>("Id")
@@ -98,6 +141,23 @@ namespace AirportAdmin.API.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("AirportAdmin.API.Entities.ShiftCoverRequest", b =>
+                {
+                    b.HasOne("AirportAdmin.API.Entities.User", "CoveredBy")
+                        .WithMany()
+                        .HasForeignKey("CoveredById");
+
+                    b.HasOne("AirportAdmin.API.Entities.User", "Requester")
+                        .WithMany()
+                        .HasForeignKey("RequesterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CoveredBy");
+
+                    b.Navigation("Requester");
                 });
 #pragma warning restore 612, 618
         }
