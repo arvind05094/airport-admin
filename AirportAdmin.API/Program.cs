@@ -42,6 +42,8 @@ builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<LeaveService>();
 builder.Services.AddScoped<ShiftCoverService>();
+builder.Services.AddScoped<LocationService>();
+builder.Services.AddScoped<JobRoleService>();
 
 var app = builder.Build();
 
@@ -52,6 +54,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
+
+
 
 
 

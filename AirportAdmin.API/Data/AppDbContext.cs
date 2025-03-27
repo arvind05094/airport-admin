@@ -8,6 +8,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<User> Users => Set<User>();
     public DbSet<LeaveRequest> LeaveRequests => Set<LeaveRequest>();
     public DbSet<ShiftCoverRequest> ShiftCoverRequests => Set<ShiftCoverRequest>();
+    public DbSet<Location> Locations => Set<Location>();
+    public DbSet<JobRole> JobRoles => Set<JobRole>();
 }
+
+
 
 
