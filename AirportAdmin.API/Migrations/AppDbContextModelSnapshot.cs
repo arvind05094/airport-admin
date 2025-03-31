@@ -140,6 +140,53 @@ namespace AirportAdmin.API.Migrations
                     b.ToTable("ShiftCoverRequests");
                 });
 
+            modelBuilder.Entity("AirportAdmin.API.Entities.StaffingRequest", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("CreatedById")
+                        .HasColumnType("integer");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<TimeOnly>("EndTime")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<int>("JobRoleId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("LocationId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("RequiredCount")
+                        .HasColumnType("integer");
+
+                    b.Property<TimeOnly>("StartTime")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedById");
+
+                    b.HasIndex("JobRoleId");
+
+                    b.HasIndex("LocationId");
+
+                    b.ToTable("StaffingRequests");
+                });
+
             modelBuilder.Entity("AirportAdmin.API.Entities.User", b =>
                 {
                     b.Property<int>("Id")
@@ -198,6 +245,33 @@ namespace AirportAdmin.API.Migrations
                     b.Navigation("CoveredBy");
 
                     b.Navigation("Requester");
+                });
+
+            modelBuilder.Entity("AirportAdmin.API.Entities.StaffingRequest", b =>
+                {
+                    b.HasOne("AirportAdmin.API.Entities.User", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AirportAdmin.API.Entities.JobRole", "JobRole")
+                        .WithMany()
+                        .HasForeignKey("JobRoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AirportAdmin.API.Entities.Location", "Location")
+                        .WithMany()
+                        .HasForeignKey("LocationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("JobRole");
+
+                    b.Navigation("Location");
                 });
 #pragma warning restore 612, 618
         }

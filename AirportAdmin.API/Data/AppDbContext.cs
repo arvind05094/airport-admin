@@ -10,7 +10,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<ShiftCoverRequest> ShiftCoverRequests => Set<ShiftCoverRequest>();
     public DbSet<Location> Locations => Set<Location>();
     public DbSet<JobRole> JobRoles => Set<JobRole>();
+    public DbSet<StaffingRequest> StaffingRequests => Set<StaffingRequest>();
 }
+
 
 
 
