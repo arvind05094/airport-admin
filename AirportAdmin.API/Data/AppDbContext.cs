@@ -11,7 +11,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Location> Locations => Set<Location>();
     public DbSet<JobRole> JobRoles => Set<JobRole>();
     public DbSet<StaffingRequest> StaffingRequests => Set<StaffingRequest>();
+    public DbSet<ShiftAssignment> ShiftAssignments => Set<ShiftAssignment>();
+    public DbSet<ConstraintProfile> ConstraintProfiles => Set<ConstraintProfile>();
 }
+
+
 
 
 

@@ -22,6 +22,35 @@ namespace AirportAdmin.API.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("AirportAdmin.API.Entities.ConstraintProfile", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("MaxConsecutiveDays")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MaxHoursPerDay")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MaxHoursPerWeek")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ConstraintProfiles");
+                });
+
             modelBuilder.Entity("AirportAdmin.API.Entities.JobRole", b =>
                 {
                     b.Property<int>("Id")
@@ -95,6 +124,51 @@ namespace AirportAdmin.API.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Locations");
+                });
+
+            modelBuilder.Entity("AirportAdmin.API.Entities.ShiftAssignment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<TimeOnly>("EndTime")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<int>("JobRoleId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("LocationId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("StaffingRequestId")
+                        .HasColumnType("integer");
+
+                    b.Property<TimeOnly>("StartTime")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("JobRoleId");
+
+                    b.HasIndex("LocationId");
+
+                    b.HasIndex("StaffingRequestId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ShiftAssignments");
                 });
 
             modelBuilder.Entity("AirportAdmin.API.Entities.ShiftCoverRequest", b =>
@@ -195,6 +269,9 @@ namespace AirportAdmin.API.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("ConstraintProfileId")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -206,6 +283,9 @@ namespace AirportAdmin.API.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int?>("JobRoleId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("text");
@@ -215,6 +295,10 @@ namespace AirportAdmin.API.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ConstraintProfileId");
+
+                    b.HasIndex("JobRoleId");
 
                     b.ToTable("Users");
                 });
@@ -226,6 +310,41 @@ namespace AirportAdmin.API.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("AirportAdmin.API.Entities.ShiftAssignment", b =>
+                {
+                    b.HasOne("AirportAdmin.API.Entities.JobRole", "JobRole")
+                        .WithMany()
+                        .HasForeignKey("JobRoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AirportAdmin.API.Entities.Location", "Location")
+                        .WithMany()
+                        .HasForeignKey("LocationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AirportAdmin.API.Entities.StaffingRequest", "StaffingRequest")
+                        .WithMany()
+                        .HasForeignKey("StaffingRequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AirportAdmin.API.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("JobRole");
+
+                    b.Navigation("Location");
+
+                    b.Navigation("StaffingRequest");
 
                     b.Navigation("User");
                 });
@@ -272,6 +391,21 @@ namespace AirportAdmin.API.Migrations
                     b.Navigation("JobRole");
 
                     b.Navigation("Location");
+                });
+
+            modelBuilder.Entity("AirportAdmin.API.Entities.User", b =>
+                {
+                    b.HasOne("AirportAdmin.API.Entities.ConstraintProfile", "ConstraintProfile")
+                        .WithMany()
+                        .HasForeignKey("ConstraintProfileId");
+
+                    b.HasOne("AirportAdmin.API.Entities.JobRole", "JobRole")
+                        .WithMany()
+                        .HasForeignKey("JobRoleId");
+
+                    b.Navigation("ConstraintProfile");
+
+                    b.Navigation("JobRole");
                 });
 #pragma warning restore 612, 618
         }
