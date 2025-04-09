@@ -214,6 +214,30 @@ namespace AirportAdmin.API.Migrations
                     b.ToTable("ShiftCoverRequests");
                 });
 
+            modelBuilder.Entity("AirportAdmin.API.Entities.StaffAvailability", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<bool>("IsAvailable")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("StaffAvailabilities");
+                });
+
             modelBuilder.Entity("AirportAdmin.API.Entities.StaffingRequest", b =>
                 {
                     b.Property<int>("Id")
@@ -364,6 +388,17 @@ namespace AirportAdmin.API.Migrations
                     b.Navigation("CoveredBy");
 
                     b.Navigation("Requester");
+                });
+
+            modelBuilder.Entity("AirportAdmin.API.Entities.StaffAvailability", b =>
+                {
+                    b.HasOne("AirportAdmin.API.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("AirportAdmin.API.Entities.StaffingRequest", b =>

@@ -13,7 +13,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<StaffingRequest> StaffingRequests => Set<StaffingRequest>();
     public DbSet<ShiftAssignment> ShiftAssignments => Set<ShiftAssignment>();
     public DbSet<ConstraintProfile> ConstraintProfiles => Set<ConstraintProfile>();
+    public DbSet<StaffAvailability> StaffAvailabilities => Set<StaffAvailability>();
 }
+
 
 
 
