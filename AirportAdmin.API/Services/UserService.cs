@@ -58,6 +58,8 @@ public class UserService(AppDbContext db)
         if (request.ConstraintProfileId.HasValue) user.ConstraintProfileId = request.ConstraintProfileId;
 
         await db.SaveChangesAsync();
+        await db.Entry(user).Reference(u => u.JobRole).LoadAsync();
+        await db.Entry(user).Reference(u => u.ConstraintProfile).LoadAsync();
         return ToResponse(user);
     }
 
@@ -84,3 +86,4 @@ public class UserService(AppDbContext db)
         CreatedAt = u.CreatedAt
     };
 }
+
