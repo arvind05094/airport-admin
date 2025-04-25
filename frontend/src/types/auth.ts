@@ -1,13 +1,13 @@
 export interface AuthResponse {
-  token: string
-  fullName: string
-  email: string
-  role: string
+  token: string;
+  fullName: string;
+  email: string;
+  role: string;
 }
 
-export interface DecodedToken {
-  nameid: string
-  email: string
-  role: string
-  exp: number
+export interface UserInfo {
+  id: string;
+  email: string;
+  role: string;
+  exp: number;
 }

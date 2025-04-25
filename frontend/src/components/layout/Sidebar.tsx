@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 
 const adminLinks = [
@@ -33,7 +33,6 @@ const managerLinks = [
 
 export default function Sidebar() {
   const { user, logout } = useAuth();
-  const location = useLocation();
 
   const links =
     user?.role === "Admin"
