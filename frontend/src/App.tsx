@@ -3,6 +3,9 @@ import { useAuth } from "./hooks/useAuth";
 import LoginPage from "./pages/auth/LoginPage";
 import DashboardPage from "./pages/DashboardPage";
 import MainLayout from "./components/layout/MainLayout";
+import UsersPage from "./pages/admin/UsersPage";
+import MyLeavesPage from "./pages/my/MyLeavesPage";
+import LeavesPage from "./pages/admin/LeavesPage";
 
 function ProtectedRoute({ allowedRoles }: { allowedRoles?: string[] }) {
   const { user } = useAuth();
@@ -45,6 +48,9 @@ export default function App() {
       <Route element={<ProtectedRoute />}>
         {/* All routes inside here automatically get wrapped in MainLayout and are secured */}
         <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/admin/users" element={<UsersPage />} />
+        <Route path="/admin/leaves" element={<LeavesPage />} />
+        <Route path="/my/leaves" element={<MyLeavesPage />} />
       </Route>
 
       {/* Fallback for 404s */}
