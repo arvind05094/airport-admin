@@ -6,6 +6,8 @@ import MainLayout from "./components/layout/MainLayout";
 import UsersPage from "./pages/admin/UsersPage";
 import MyLeavesPage from "./pages/my/MyLeavesPage";
 import LeavesPage from "./pages/admin/LeavesPage";
+import ShiftCoverPage from "./pages/admin/ShiftCoverPage";
+import MyShiftCoverPage from "./pages/my/MyShiftCoverPage";
 
 function ProtectedRoute({ allowedRoles }: { allowedRoles?: string[] }) {
   const { user } = useAuth();
@@ -51,6 +53,8 @@ export default function App() {
         <Route path="/admin/users" element={<UsersPage />} />
         <Route path="/admin/leaves" element={<LeavesPage />} />
         <Route path="/my/leaves" element={<MyLeavesPage />} />
+        <Route path="/admin/shift-cover" element={<ShiftCoverPage />} />
+        <Route path="/my/shift-cover" element={<MyShiftCoverPage />} />
       </Route>
 
       {/* Fallback for 404s */}
