@@ -8,6 +8,8 @@ import MyLeavesPage from "./pages/my/MyLeavesPage";
 import LeavesPage from "./pages/admin/LeavesPage";
 import ShiftCoverPage from "./pages/admin/ShiftCoverPage";
 import MyShiftCoverPage from "./pages/my/MyShiftCoverPage";
+import StaffingRequestsPage from "./pages/admin/StaffingRequestsPage";
+import MyStaffingRequestsPage from "./pages/my/MyStaffingRequestsPage";
 
 function ProtectedRoute({ allowedRoles }: { allowedRoles?: string[] }) {
   const { user } = useAuth();
@@ -55,6 +57,14 @@ export default function App() {
         <Route path="/my/leaves" element={<MyLeavesPage />} />
         <Route path="/admin/shift-cover" element={<ShiftCoverPage />} />
         <Route path="/my/shift-cover" element={<MyShiftCoverPage />} />
+        <Route
+          path="/admin/staffing-requests"
+          element={<StaffingRequestsPage />}
+        />
+        <Route
+          path="/my/staffing-requests"
+          element={<MyStaffingRequestsPage />}
+        />
       </Route>
 
       {/* Fallback for 404s */}
