@@ -10,6 +10,9 @@ import ShiftCoverPage from "./pages/admin/ShiftCoverPage";
 import MyShiftCoverPage from "./pages/my/MyShiftCoverPage";
 import StaffingRequestsPage from "./pages/admin/StaffingRequestsPage";
 import MyStaffingRequestsPage from "./pages/my/MyStaffingRequestsPage";
+import ConstraintProfilesPage from "./pages/admin/ConstraintProfilesPage";
+import JobRolesPage from "./pages/admin/JobRolesPage";
+import LocationsPage from "./pages/admin/LocationsPage";
 
 function ProtectedRoute({ allowedRoles }: { allowedRoles?: string[] }) {
   const { user } = useAuth();
@@ -64,6 +67,12 @@ export default function App() {
         <Route
           path="/my/staffing-requests"
           element={<MyStaffingRequestsPage />}
+        />
+        <Route path="/admin/locations" element={<LocationsPage />} />
+        <Route path="/admin/job-roles" element={<JobRolesPage />} />
+        <Route
+          path="/admin/constraint-profiles"
+          element={<ConstraintProfilesPage />}
         />
       </Route>
 
