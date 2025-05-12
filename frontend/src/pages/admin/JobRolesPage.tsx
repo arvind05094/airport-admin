@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import api from "../../lib/api";
-
-interface JobRole {
-  id: number;
-  name: string;
-}
+import { JobRole } from "../../types/common";
+import PageHeader from "../../components/PageHeader";
+import EmptyState from "../../components/EmptyState";
+import LoadingSpinner from "../../components/LoadingSpinner";
 
 export default function JobRolesPage() {
   const [jobRoles, setJobRoles] = useState<JobRole[]>([]);
@@ -48,22 +47,18 @@ export default function JobRolesPage() {
     }
   };
 
-  if (loading) return <p className="text-sm text-gray-500">Loading...</p>;
+  if (loading) return <LoadingSpinner />;
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-semibold">Job Roles</h1>
-          <p className="text-sm text-gray-500 mt-1">Manage job roles</p>
-        </div>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="bg-black text-white text-sm px-4 py-2 rounded-md hover:bg-gray-800 transition"
-        >
-          {showForm ? "Cancel" : "Add Job Role"}
-        </button>
-      </div>
+      <PageHeader
+        title="Job Roles"
+        subtitle="Manage job roles"
+        action={{
+          label: showForm ? "Cancel" : "Add Job Role",
+          onClick: () => setShowForm(!showForm),
+        }}
+      />
 
       {showForm && (
         <form
@@ -114,14 +109,7 @@ export default function JobRolesPage() {
               </tr>
             ))}
             {jobRoles.length === 0 && (
-              <tr>
-                <td
-                  colSpan={2}
-                  className="px-4 py-8 text-center text-gray-400 text-sm"
-                >
-                  No job roles found
-                </td>
-              </tr>
+              <EmptyState colSpan={2} message="No job roles found" />
             )}
           </tbody>
         </table>

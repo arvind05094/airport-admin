@@ -1,14 +1,11 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import api from "../../lib/api";
-
-interface Leave {
-  id: number;
-  startDate: string;
-  endDate: string;
-  reason: string;
-  status: string;
-}
+import { MyLeave } from "../../types/my";
+import EmptyState from "../../components/EmptyState";
+import LoadingSpinner from "../../components/LoadingSpinner";
+import PageHeader from "../../components/PageHeader";
+import StatusBadge from "../../components/StatusBadge";
 
 interface ApplyForm {
   startDate: string;
@@ -17,13 +14,9 @@ interface ApplyForm {
 }
 
 export default function MyLeavesPage() {
-  const [leaves, setLeaves] = useState<Leave[]>([]);
+  const [leaves, setLeaves] = useState<MyLeave[]>([]);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState<ApplyForm>({
-    startDate: "",
-    endDate: "",
-    reason: "",
-  });
+  const [form, setForm] = useState<ApplyForm>({ startDate: "", endDate: "", reason: "" });
   const [loading, setLoading] = useState(true);
 
   const fetchLeaves = () => {
@@ -46,9 +39,7 @@ export default function MyLeavesPage() {
       setForm({ startDate: "", endDate: "", reason: "" });
       fetchLeaves();
     } catch (err: any) {
-      toast.error(
-        err.response?.data?.message ?? "Failed to submit leave request",
-      );
+      toast.error(err.response?.data?.message ?? "Failed to submit leave request");
     }
   };
 
@@ -63,24 +54,15 @@ export default function MyLeavesPage() {
     }
   };
 
-  if (loading) return <p className="text-sm text-gray-500">Loading...</p>;
+  if (loading) return <LoadingSpinner />;
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-semibold">My Leaves</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            View and manage your leave requests
-          </p>
-        </div>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="bg-black text-white text-sm px-4 py-2 rounded-md hover:bg-gray-800 transition"
-        >
-          {showForm ? "Cancel" : "Apply for Leave"}
-        </button>
-      </div>
+      <PageHeader
+        title="My Leaves"
+        subtitle="View and manage your leave requests"
+        action={{ label: showForm ? "Cancel" : "Apply for Leave", onClick: () => setShowForm(!showForm) }}
+      />
 
       {showForm && (
         <form
@@ -132,42 +114,21 @@ export default function MyLeavesPage() {
         <table className="w-full text-sm">
           <thead className="border-b border-gray-200 bg-gray-50">
             <tr>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">
-                Start Date
-              </th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">
-                End Date
-              </th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">
-                Reason
-              </th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">
-                Status
-              </th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600">Start Date</th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600">End Date</th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600">Reason</th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600">Status</th>
               <th className="text-left px-4 py-3 font-medium text-gray-600"></th>
             </tr>
           </thead>
           <tbody>
             {leaves.map((leave) => (
-              <tr
-                key={leave.id}
-                className="border-b border-gray-100 last:border-0"
-              >
+              <tr key={leave.id} className="border-b border-gray-100 last:border-0">
                 <td className="px-4 py-3">{leave.startDate}</td>
                 <td className="px-4 py-3">{leave.endDate}</td>
                 <td className="px-4 py-3 text-gray-500">{leave.reason}</td>
                 <td className="px-4 py-3">
-                  <span
-                    className={`inline-block rounded px-2 py-0.5 text-xs border ${
-                      leave.status === "Approved"
-                        ? "border-green-300 text-green-700"
-                        : leave.status === "Rejected"
-                          ? "border-red-300 text-red-700"
-                          : "border-gray-300 text-gray-600"
-                    }`}
-                  >
-                    {leave.status}
-                  </span>
+                  <StatusBadge status={leave.status} />
                 </td>
                 <td className="px-4 py-3 text-right">
                   {leave.status === "Pending" && (
@@ -182,14 +143,7 @@ export default function MyLeavesPage() {
               </tr>
             ))}
             {leaves.length === 0 && (
-              <tr>
-                <td
-                  colSpan={5}
-                  className="px-4 py-8 text-center text-gray-400 text-sm"
-                >
-                  No leave requests found
-                </td>
-              </tr>
+              <EmptyState colSpan={5} message="No leave requests found" />
             )}
           </tbody>
         </table>

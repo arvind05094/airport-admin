@@ -1,14 +1,10 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import api from "../../lib/api";
-
-interface ConstraintProfile {
-  id: number;
-  name: string;
-  maxHoursPerDay: number;
-  maxHoursPerWeek: number;
-  maxConsecutiveDays: number;
-}
+import PageHeader from "../../components/PageHeader";
+import EmptyState from "../../components/EmptyState";
+import LoadingSpinner from "../../components/LoadingSpinner";
+import type { ConstraintProfile } from "@/types/common";
 
 interface CreateForm {
   name: string;
@@ -17,15 +13,17 @@ interface CreateForm {
   maxConsecutiveDays: number;
 }
 
+const emptyForm: CreateForm = {
+  name: "",
+  maxHoursPerDay: 8,
+  maxHoursPerWeek: 40,
+  maxConsecutiveDays: 5,
+};
+
 export default function ConstraintProfilesPage() {
   const [profiles, setProfiles] = useState<ConstraintProfile[]>([]);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState<CreateForm>({
-    name: "",
-    maxHoursPerDay: 8,
-    maxHoursPerWeek: 40,
-    maxConsecutiveDays: 5,
-  });
+  const [form, setForm] = useState<CreateForm>(emptyForm);
   const [loading, setLoading] = useState(true);
 
   const fetchProfiles = () => {
@@ -45,12 +43,7 @@ export default function ConstraintProfilesPage() {
       await api.post("/api/admin/constraint-profiles", form);
       toast.success("Constraint profile created");
       setShowForm(false);
-      setForm({
-        name: "",
-        maxHoursPerDay: 8,
-        maxHoursPerWeek: 40,
-        maxConsecutiveDays: 5,
-      });
+      setForm(emptyForm);
       fetchProfiles();
     } catch {
       toast.error("Failed to create constraint profile");
@@ -68,24 +61,18 @@ export default function ConstraintProfilesPage() {
     }
   };
 
-  if (loading) return <p className="text-sm text-gray-500">Loading...</p>;
+  if (loading) return <LoadingSpinner />;
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-semibold">Constraint Profiles</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Manage staff constraint profiles
-          </p>
-        </div>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="bg-black text-white text-sm px-4 py-2 rounded-md hover:bg-gray-800 transition"
-        >
-          {showForm ? "Cancel" : "Add Profile"}
-        </button>
-      </div>
+      <PageHeader
+        title="Constraint Profiles"
+        subtitle="Manage staff constraint profiles"
+        action={{
+          label: showForm ? "Cancel" : "Add Profile",
+          onClick: () => setShowForm(!showForm),
+        }}
+      />
 
       {showForm && (
         <form
@@ -206,14 +193,7 @@ export default function ConstraintProfilesPage() {
               </tr>
             ))}
             {profiles.length === 0 && (
-              <tr>
-                <td
-                  colSpan={5}
-                  className="px-4 py-8 text-center text-gray-400 text-sm"
-                >
-                  No constraint profiles found
-                </td>
-              </tr>
+              <EmptyState colSpan={5} message="No constraint profiles found" />
             )}
           </tbody>
         </table>

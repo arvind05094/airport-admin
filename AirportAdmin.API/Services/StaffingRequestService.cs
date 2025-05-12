@@ -7,39 +7,55 @@ namespace AirportAdmin.API.Services;
 
 public class StaffingRequestService(AppDbContext db)
 {
-    public async Task<(StaffingRequestResponse? result, string? error)> CreateAsync(int userId, CreateStaffingRequest request)
+    public async Task<(List<StaffingRequestResponse> results, string? error)> CreateAsync(int userId, CreateStaffingRequest request)
     {
-        if (request.Date < DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1)))
-            return (null, "Date must be in the future.");
+        if (request.StartDate < DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1)))
+            return ([], "Start date must be in the future.");
+
+        if (request.EndDate < request.StartDate)
+            return ([], "End date must be after start date.");
+
+        if (request.EndDate > request.StartDate.AddDays(28))
+            return ([], "Date range cannot exceed 28 days.");
 
         if (request.EndTime <= request.StartTime)
-            return (null, "End time must be after start time.");
+            return ([], "End time must be after start time.");
 
         var locationExists = await db.Locations.AnyAsync(l => l.Id == request.LocationId);
-        if (!locationExists) return (null, "Location not found.");
+        if (!locationExists) return ([], "Location not found.");
 
         var roleExists = await db.JobRoles.AnyAsync(r => r.Id == request.JobRoleId);
-        if (!roleExists) return (null, "Job role not found.");
+        if (!roleExists) return ([], "Job role not found.");
 
-        var staffingRequest = new StaffingRequest
+        var staffingRequests = new List<StaffingRequest>();
+        var current = request.StartDate;
+
+        while (current <= request.EndDate)
         {
-            CreatedById = userId,
-            LocationId = request.LocationId,
-            JobRoleId = request.JobRoleId,
-            Date = request.Date,
-            StartTime = request.StartTime,
-            EndTime = request.EndTime,
-            RequiredCount = request.RequiredCount
-        };
+            staffingRequests.Add(new StaffingRequest
+            {
+                CreatedById = userId,
+                LocationId = request.LocationId,
+                JobRoleId = request.JobRoleId,
+                Date = current,
+                StartTime = request.StartTime,
+                EndTime = request.EndTime,
+                RequiredCount = request.RequiredCount
+            });
+            current = current.AddDays(1);
+        }
 
-        db.StaffingRequests.Add(staffingRequest);
+        db.StaffingRequests.AddRange(staffingRequests);
         await db.SaveChangesAsync();
 
-        await db.Entry(staffingRequest).Reference(s => s.CreatedBy).LoadAsync();
-        await db.Entry(staffingRequest).Reference(s => s.Location).LoadAsync();
-        await db.Entry(staffingRequest).Reference(s => s.JobRole).LoadAsync();
+        foreach (var sr in staffingRequests)
+        {
+            await db.Entry(sr).Reference(s => s.CreatedBy).LoadAsync();
+            await db.Entry(sr).Reference(s => s.Location).LoadAsync();
+            await db.Entry(sr).Reference(s => s.JobRole).LoadAsync();
+        }
 
-        return (ToResponse(staffingRequest), null);
+        return (staffingRequests.Select(ToResponse).ToList(), null);
     }
 
     public async Task<List<StaffingRequestResponse>> GetMyRequestsAsync(int userId) =>

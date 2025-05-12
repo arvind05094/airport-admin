@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import api from "../../lib/api";
-
-interface Location {
-  id: number;
-  name: string;
-}
+import { Location } from "../../types/common";
+import PageHeader from "../../components/PageHeader";
+import EmptyState from "../../components/EmptyState";
+import LoadingSpinner from "../../components/LoadingSpinner";
 
 export default function LocationsPage() {
   const [locations, setLocations] = useState<Location[]>([]);
@@ -48,22 +47,18 @@ export default function LocationsPage() {
     }
   };
 
-  if (loading) return <p className="text-sm text-gray-500">Loading...</p>;
+  if (loading) return <LoadingSpinner />;
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-semibold">Locations</h1>
-          <p className="text-sm text-gray-500 mt-1">Manage airport locations</p>
-        </div>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="bg-black text-white text-sm px-4 py-2 rounded-md hover:bg-gray-800 transition"
-        >
-          {showForm ? "Cancel" : "Add Location"}
-        </button>
-      </div>
+      <PageHeader
+        title="Locations"
+        subtitle="Manage airport locations"
+        action={{
+          label: showForm ? "Cancel" : "Add Location",
+          onClick: () => setShowForm(!showForm),
+        }}
+      />
 
       {showForm && (
         <form
@@ -114,14 +109,7 @@ export default function LocationsPage() {
               </tr>
             ))}
             {locations.length === 0 && (
-              <tr>
-                <td
-                  colSpan={2}
-                  className="px-4 py-8 text-center text-gray-400 text-sm"
-                >
-                  No locations found
-                </td>
-              </tr>
+              <EmptyState colSpan={2} message="No locations found" />
             )}
           </tbody>
         </table>

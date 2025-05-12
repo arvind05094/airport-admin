@@ -15,9 +15,9 @@ public class MyStaffingRequestController(StaffingRequestService staffingRequestS
     public async Task<IActionResult> Create([FromBody] CreateStaffingRequest request)
     {
         var userId = JwtHelper.GetUserId(HttpContext);
-        var (result, error) = await staffingRequestService.CreateAsync(userId, request);
+        var (results, error) = await staffingRequestService.CreateAsync(userId, request);
         if (error != null) return BadRequest(new { message = error });
-        return Ok(result);
+        return Ok(results);
     }
 
     [HttpGet]

@@ -6,12 +6,12 @@ public class CreateStaffingRequest
 {
     [Required] public int LocationId { get; set; }
     [Required] public int JobRoleId { get; set; }
-    [Required] public DateOnly Date { get; set; }
+    [Required] public DateOnly StartDate { get; set; }
+    [Required] public DateOnly EndDate { get; set; }
     [Required] public TimeOnly StartTime { get; set; }
     [Required] public TimeOnly EndTime { get; set; }
     [Range(1, int.MaxValue)] public int RequiredCount { get; set; }
 }
-
 public class StaffingRequestResponse
 {
     public int Id { get; set; }

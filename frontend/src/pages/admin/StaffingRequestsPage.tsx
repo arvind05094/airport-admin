@@ -1,21 +1,14 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import api from "../../lib/api";
-
-interface StaffingRequest {
-  id: number;
-  createdByFullName: string;
-  locationName: string;
-  jobRoleName: string;
-  date: string;
-  startTime: string;
-  endTime: string;
-  requiredCount: number;
-  status: string;
-}
+import { AdminStaffingRequest } from "../../types/admin";
+import EmptyState from "../../components/EmptyState";
+import LoadingSpinner from "../../components/LoadingSpinner";
+import PageHeader from "../../components/PageHeader";
+import StatusBadge from "../../components/StatusBadge";
 
 export default function StaffingRequestsPage() {
-  const [requests, setRequests] = useState<StaffingRequest[]>([]);
+  const [requests, setRequests] = useState<AdminStaffingRequest[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchRequests = () => {
@@ -39,51 +32,32 @@ export default function StaffingRequestsPage() {
     }
   };
 
-  if (loading) return <p className="text-sm text-gray-500">Loading...</p>;
+  if (loading) return <LoadingSpinner />;
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold">Staffing Requests</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          View and manage all staffing requests
-        </p>
-      </div>
+      <PageHeader
+        title="Staffing Requests"
+        subtitle="View and manage all staffing requests"
+      />
 
       <div className="border border-gray-200 rounded-lg bg-white overflow-hidden">
         <table className="w-full text-sm">
           <thead className="border-b border-gray-200 bg-gray-50">
             <tr>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">
-                Created By
-              </th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">
-                Location
-              </th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">
-                Job Role
-              </th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">
-                Date
-              </th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">
-                Time
-              </th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">
-                Required
-              </th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">
-                Status
-              </th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600">Created By</th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600">Location</th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600">Job Role</th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600">Date</th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600">Time</th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600">Required</th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600">Status</th>
               <th className="text-left px-4 py-3 font-medium text-gray-600"></th>
             </tr>
           </thead>
           <tbody>
             {requests.map((req) => (
-              <tr
-                key={req.id}
-                className="border-b border-gray-100 last:border-0"
-              >
+              <tr key={req.id} className="border-b border-gray-100 last:border-0">
                 <td className="px-4 py-3">{req.createdByFullName}</td>
                 <td className="px-4 py-3 text-gray-500">{req.locationName}</td>
                 <td className="px-4 py-3 text-gray-500">{req.jobRoleName}</td>
@@ -93,17 +67,7 @@ export default function StaffingRequestsPage() {
                 </td>
                 <td className="px-4 py-3 text-gray-500">{req.requiredCount}</td>
                 <td className="px-4 py-3">
-                  <span
-                    className={`inline-block rounded px-2 py-0.5 text-xs border ${
-                      req.status === "Fulfilled"
-                        ? "border-green-300 text-green-700"
-                        : req.status === "Cancelled"
-                          ? "border-red-300 text-red-700"
-                          : "border-gray-300 text-gray-600"
-                    }`}
-                  >
-                    {req.status}
-                  </span>
+                  <StatusBadge status={req.status} />
                 </td>
                 <td className="px-4 py-3 text-right">
                   {req.status === "Pending" && (
@@ -118,14 +82,7 @@ export default function StaffingRequestsPage() {
               </tr>
             ))}
             {requests.length === 0 && (
-              <tr>
-                <td
-                  colSpan={8}
-                  className="px-4 py-8 text-center text-gray-400 text-sm"
-                >
-                  No staffing requests found
-                </td>
-              </tr>
+              <EmptyState colSpan={8} message="No staffing requests found" />
             )}
           </tbody>
         </table>
