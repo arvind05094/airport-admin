@@ -1,11 +1,11 @@
+import LoadingSpinner from "@/components/LoadingSpinner";
+import PageHeader from "@/components/PageHeader";
+import api from "@/lib/api";
+import type { GenerateResult, RosterAssignment } from "@/types/admin";
+import type { JobRole, Location } from "@/types/common";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import api from "../../lib/api";
-import EmptyState from "../../components/EmptyState";
-import LoadingSpinner from "../../components/LoadingSpinner";
-import PageHeader from "../../components/PageHeader";
-import type { GenerateResult, RosterAssignment } from "@/types/admin";
-import type { JobRole } from "@/types/common";
+import EmptyState from "@/components/EmptyState";
 
 interface GenerateForm {
   startDate: string;
@@ -51,7 +51,7 @@ export default function RosterPage() {
       toast.success(`Generated ${res.data.totalAssignments} assignments`);
       fetchAssignments();
       setShowForm(false);
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast.error(err.response?.data?.message ?? "Failed to generate roster");
     } finally {
       setGenerating(false);

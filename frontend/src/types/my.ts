@@ -42,3 +42,10 @@ export interface MyRosterAssignment {
   locationName: string;
   jobRoleName: string;
 }
+
+export interface MyAvailability {
+  id: number;
+  userId: number;
+  date: string;
+  isAvailable: boolean;
+}

@@ -68,3 +68,11 @@ export interface GenerateResult {
   unfilledRequests: number;
   assignments: RosterAssignment[];
 }
+
+export interface AdminAvailability {
+  id: number;
+  userId: number;
+  userFullName: string;
+  date: string;
+  isAvailable: boolean;
+}

@@ -40,6 +40,7 @@ public class AvailabilityService(AppDbContext db)
 
     public async Task<List<AvailabilityResponse>> GetAllAsync() =>
         await db.StaffAvailabilities
+            .Include(a => a.User)
             .OrderBy(a => a.Date)
             .Select(a => ToResponse(a))
             .ToListAsync();
@@ -48,6 +49,7 @@ public class AvailabilityService(AppDbContext db)
     {
         Id = a.Id,
         UserId = a.UserId,
+        UserFullName = a.User?.FullName ?? string.Empty,
         Date = a.Date,
         IsAvailable = a.IsAvailable
     };

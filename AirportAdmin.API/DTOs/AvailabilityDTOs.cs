@@ -12,6 +12,7 @@ public class AvailabilityResponse
 {
     public int Id { get; set; }
     public int UserId { get; set; }
+    public string UserFullName { get; set; } = string.Empty;
     public DateOnly Date { get; set; }
     public bool IsAvailable { get; set; }
 }
