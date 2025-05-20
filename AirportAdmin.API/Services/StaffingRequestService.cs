@@ -58,6 +58,62 @@ public class StaffingRequestService(AppDbContext db)
         return (staffingRequests.Select(ToResponse).ToList(), null);
     }
 
+    public async Task<(List<StaffingRequestResponse> results, string? error)> CreateBulkAsync(int userId, BulkCreateStaffingRequest bulk)
+    {
+        var allRequests = new List<StaffingRequest>();
+
+        foreach (var (request, index) in bulk.Requests.Select((r, i) => (r, i)))
+        {
+            var rowLabel = $"Row {index + 1}";
+
+            if (request.StartDate < DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1)))
+                return ([], $"{rowLabel}: Start date must be in the future.");
+
+            if (request.EndDate < request.StartDate)
+                return ([], $"{rowLabel}: End date must be after start date.");
+
+            if (request.EndDate > request.StartDate.AddDays(28))
+                return ([], $"{rowLabel}: Date range cannot exceed 28 days.");
+
+            if (request.EndTime <= request.StartTime)
+                return ([], $"{rowLabel}: End time must be after start time.");
+
+            var locationExists = await db.Locations.AnyAsync(l => l.Id == request.LocationId);
+            if (!locationExists) return ([], $"{rowLabel}: Location not found.");
+
+            var roleExists = await db.JobRoles.AnyAsync(r => r.Id == request.JobRoleId);
+            if (!roleExists) return ([], $"{rowLabel}: Job role not found.");
+
+            var current = request.StartDate;
+            while (current <= request.EndDate)
+            {
+                allRequests.Add(new StaffingRequest
+                {
+                    CreatedById = userId,
+                    LocationId = request.LocationId,
+                    JobRoleId = request.JobRoleId,
+                    Date = current,
+                    StartTime = request.StartTime,
+                    EndTime = request.EndTime,
+                    RequiredCount = request.RequiredCount
+                });
+                current = current.AddDays(1);
+            }
+        }
+
+        db.StaffingRequests.AddRange(allRequests);
+        await db.SaveChangesAsync();
+
+        foreach (var sr in allRequests)
+        {
+            await db.Entry(sr).Reference(s => s.CreatedBy).LoadAsync();
+            await db.Entry(sr).Reference(s => s.Location).LoadAsync();
+            await db.Entry(sr).Reference(s => s.JobRole).LoadAsync();
+        }
+
+        return (allRequests.Select(ToResponse).ToList(), null);
+    }
+
     public async Task<List<StaffingRequestResponse>> GetMyRequestsAsync(int userId) =>
         await db.StaffingRequests
             .Include(s => s.CreatedBy)

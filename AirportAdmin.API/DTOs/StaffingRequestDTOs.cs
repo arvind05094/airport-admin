@@ -28,3 +28,9 @@ public class StaffingRequestResponse
     public string Status { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
 }
+
+public class BulkCreateStaffingRequest
+{
+    [Required, MinLength(1)]
+    public List<CreateStaffingRequest> Requests { get; set; } = [];
+}

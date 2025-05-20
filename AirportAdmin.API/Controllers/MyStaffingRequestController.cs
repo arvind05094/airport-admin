@@ -35,4 +35,13 @@ public class MyStaffingRequestController(StaffingRequestService staffingRequestS
         if (error != null) return BadRequest(new { message = error });
         return NoContent();
     }
+
+    [HttpPost("bulk")]
+    public async Task<IActionResult> CreateBulk([FromBody] BulkCreateStaffingRequest request)
+    {
+        var userId = JwtHelper.GetUserId(HttpContext);
+        var (results, error) = await staffingRequestService.CreateBulkAsync(userId, request);
+        if (error != null) return BadRequest(new { message = error });
+        return Ok(results);
+    }
 }

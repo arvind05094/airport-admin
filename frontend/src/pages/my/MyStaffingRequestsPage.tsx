@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import api from "../../lib/api";
-import { MyStaffingRequest } from "../../types/my";
-import { Location, JobRole } from "../../types/common";
 import EmptyState from "../../components/EmptyState";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import PageHeader from "../../components/PageHeader";
 import StatusBadge from "../../components/StatusBadge";
+import BulkRequestForm from "../../components/BulkRequestForm";
+import type { MyStaffingRequest } from "@/types/my";
+import type { JobRole, Location } from "@/types/common";
 
 interface CreateForm {
   locationId: number;
@@ -28,11 +29,13 @@ const emptyForm: CreateForm = {
   requiredCount: 1,
 };
 
+type FormMode = "none" | "single" | "bulk";
+
 export default function MyStaffingRequestsPage() {
   const [requests, setRequests] = useState<MyStaffingRequest[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
   const [jobRoles, setJobRoles] = useState<JobRole[]>([]);
-  const [showForm, setShowForm] = useState(false);
+  const [mode, setMode] = useState<FormMode>("none");
   const [form, setForm] = useState<CreateForm>(emptyForm);
   const [loading, setLoading] = useState(true);
 
@@ -54,11 +57,24 @@ export default function MyStaffingRequestsPage() {
     try {
       await api.post("/api/my/staffing-requests", form);
       toast.success("Staffing request created");
-      setShowForm(false);
+      setMode("none");
       setForm(emptyForm);
       fetchRequests();
     } catch (err: any) {
       toast.error(err.response?.data?.message ?? "Failed to create request");
+    }
+  };
+
+  const handleBulkSubmit = async (rows: any[]) => {
+    try {
+      await api.post("/api/my/staffing-requests/bulk", { requests: rows });
+      toast.success("Bulk staffing requests created");
+      setMode("none");
+      fetchRequests();
+    } catch (err: any) {
+      toast.error(
+        err.response?.data?.message ?? "Failed to create bulk requests",
+      );
     }
   };
 
@@ -80,10 +96,31 @@ export default function MyStaffingRequestsPage() {
       <PageHeader
         title="My Staffing Requests"
         subtitle="Create and manage staffing requests"
-        action={{ label: showForm ? "Cancel" : "New Request", onClick: () => setShowForm(!showForm) }}
+        action={
+          mode === "none"
+            ? undefined
+            : { label: "Close", onClick: () => setMode("none") }
+        }
       />
 
-      {showForm && (
+      {mode === "none" && (
+        <div className="flex gap-2 mb-6">
+          <button
+            onClick={() => setMode("single")}
+            className="bg-black text-white text-sm px-4 py-2 rounded-md hover:bg-gray-800 transition"
+          >
+            New Request
+          </button>
+          <button
+            onClick={() => setMode("bulk")}
+            className="border border-gray-300 text-sm px-4 py-2 rounded-md hover:bg-gray-50 transition"
+          >
+            Bulk Request
+          </button>
+        </div>
+      )}
+
+      {mode === "single" && (
         <form
           onSubmit={handleCreate}
           className="border border-gray-200 rounded-lg p-6 mb-6 bg-white grid grid-cols-2 gap-4"
@@ -93,12 +130,16 @@ export default function MyStaffingRequestsPage() {
             <select
               required
               value={form.locationId}
-              onChange={(e) => setForm({ ...form, locationId: +e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, locationId: +e.target.value })
+              }
               className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
             >
               <option value={0}>Select location</option>
               {locations.map((l) => (
-                <option key={l.id} value={l.id}>{l.name}</option>
+                <option key={l.id} value={l.id}>
+                  {l.name}
+                </option>
               ))}
             </select>
           </div>
@@ -112,7 +153,9 @@ export default function MyStaffingRequestsPage() {
             >
               <option value={0}>Select job role</option>
               {jobRoles.map((r) => (
-                <option key={r.id} value={r.id}>{r.name}</option>
+                <option key={r.id} value={r.id}>
+                  {r.name}
+                </option>
               ))}
             </select>
           </div>
@@ -137,13 +180,17 @@ export default function MyStaffingRequestsPage() {
             />
           </div>
           <div>
-            <label className="text-sm font-medium block mb-1">Required Staff</label>
+            <label className="text-sm font-medium block mb-1">
+              Required Staff
+            </label>
             <input
               required
               type="number"
               min={1}
               value={form.requiredCount}
-              onChange={(e) => setForm({ ...form, requiredCount: +e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, requiredCount: +e.target.value })
+              }
               className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
             />
           </div>
@@ -167,37 +214,70 @@ export default function MyStaffingRequestsPage() {
               className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
             />
           </div>
-          <div className="col-span-2">
+          <div className="col-span-2 flex gap-3">
             <button
               type="submit"
               className="bg-black text-white text-sm px-4 py-2 rounded-md hover:bg-gray-800 transition"
             >
               Submit Request
             </button>
+            <button
+              type="button"
+              onClick={() => setMode("none")}
+              className="text-sm text-gray-500 hover:text-black transition"
+            >
+              Cancel
+            </button>
           </div>
         </form>
+      )}
+
+      {mode === "bulk" && (
+        <BulkRequestForm
+          locations={locations}
+          jobRoles={jobRoles}
+          onSubmit={handleBulkSubmit}
+          onCancel={() => setMode("none")}
+        />
       )}
 
       <div className="border border-gray-200 rounded-lg bg-white overflow-hidden">
         <table className="w-full text-sm">
           <thead className="border-b border-gray-200 bg-gray-50">
             <tr>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Location</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Job Role</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Date</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Time</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Required</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Status</th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600">
+                Location
+              </th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600">
+                Job Role
+              </th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600">
+                Date
+              </th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600">
+                Time
+              </th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600">
+                Required
+              </th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600">
+                Status
+              </th>
               <th className="text-left px-4 py-3 font-medium text-gray-600"></th>
             </tr>
           </thead>
           <tbody>
             {requests.map((req) => (
-              <tr key={req.id} className="border-b border-gray-100 last:border-0">
+              <tr
+                key={req.id}
+                className="border-b border-gray-100 last:border-0"
+              >
                 <td className="px-4 py-3">{req.locationName}</td>
                 <td className="px-4 py-3 text-gray-500">{req.jobRoleName}</td>
                 <td className="px-4 py-3 text-gray-500">{req.date}</td>
-                <td className="px-4 py-3 text-gray-500">{req.startTime} - {req.endTime}</td>
+                <td className="px-4 py-3 text-gray-500">
+                  {req.startTime} - {req.endTime}
+                </td>
                 <td className="px-4 py-3 text-gray-500">{req.requiredCount}</td>
                 <td className="px-4 py-3">
                   <StatusBadge status={req.status} />
