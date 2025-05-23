@@ -61,6 +61,7 @@ export interface RosterAssignment {
   endTime: string;
   locationName: string;
   jobRoleName: string;
+  createdAt: string;
 }
 
 export interface GenerateResult {

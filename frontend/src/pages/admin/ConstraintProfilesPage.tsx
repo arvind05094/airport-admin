@@ -170,7 +170,7 @@ export default function ConstraintProfilesPage() {
             {profiles.map((profile) => (
               <tr
                 key={profile.id}
-                className="border-b border-gray-100 last:border-0"
+                className="border-b border-gray-100 last:border-0 even:bg-gray-50"
               >
                 <td className="px-4 py-3">{profile.name}</td>
                 <td className="px-4 py-3 text-gray-500">

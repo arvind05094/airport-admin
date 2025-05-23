@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../../lib/api";
 import type { AdminAvailability } from "../../types/admin";
-import EmptyState from "../../components/EmptyState";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import PageHeader from "../../components/PageHeader";
 
@@ -42,7 +41,10 @@ export default function AvailabilityPage() {
           </thead>
           <tbody>
             {records.map((r) => (
-              <tr key={r.id} className="border-b border-gray-100 last:border-0">
+              <tr
+                key={r.id}
+                className="border-b border-gray-100 last:border-0 even:bg-gray-50"
+              >
                 <td className="px-4 py-3">{r.userFullName}</td>
                 <td className="px-4 py-3 text-gray-500">{r.date}</td>
                 <td className="px-4 py-3">

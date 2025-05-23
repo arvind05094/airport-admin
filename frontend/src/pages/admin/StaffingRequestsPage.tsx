@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import api from "../../lib/api";
-import { AdminStaffingRequest } from "../../types/admin";
+import api, { formatDate } from "../../lib/api";
 import EmptyState from "../../components/EmptyState";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import PageHeader from "../../components/PageHeader";
 import StatusBadge from "../../components/StatusBadge";
+import type { AdminStaffingRequest } from "@/types/admin";
 
 export default function StaffingRequestsPage() {
   const [requests, setRequests] = useState<AdminStaffingRequest[]>([]);
@@ -45,19 +45,39 @@ export default function StaffingRequestsPage() {
         <table className="w-full text-sm">
           <thead className="border-b border-gray-200 bg-gray-50">
             <tr>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Created By</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Location</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Job Role</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Date</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Time</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Required</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Status</th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600">
+                Created By
+              </th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600">
+                Location
+              </th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600">
+                Job Role
+              </th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600">
+                Date
+              </th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600">
+                Time
+              </th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600">
+                Required
+              </th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600">
+                Status
+              </th>
               <th className="text-left px-4 py-3 font-medium text-gray-600"></th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600">
+                Created At
+              </th>
             </tr>
           </thead>
           <tbody>
             {requests.map((req) => (
-              <tr key={req.id} className="border-b border-gray-100 last:border-0">
+              <tr
+                key={req.id}
+                className="border-b border-gray-100 last:border-0 even:bg-gray-50"
+              >
                 <td className="px-4 py-3">{req.createdByFullName}</td>
                 <td className="px-4 py-3 text-gray-500">{req.locationName}</td>
                 <td className="px-4 py-3 text-gray-500">{req.jobRoleName}</td>
@@ -79,10 +99,13 @@ export default function StaffingRequestsPage() {
                     </button>
                   )}
                 </td>
+                <td className="px-4 py-3 text-gray-500">
+                  {formatDate(req.createdAt)}
+                </td>
               </tr>
             ))}
             {requests.length === 0 && (
-              <EmptyState colSpan={8} message="No staffing requests found" />
+              <EmptyState colSpan={9} message="No staffing requests found" />
             )}
           </tbody>
         </table>

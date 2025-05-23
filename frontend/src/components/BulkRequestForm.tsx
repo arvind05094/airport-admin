@@ -1,7 +1,7 @@
 import type { Location, JobRole } from "@/types/common";
 import { useState } from "react";
 
-interface BulkRow {
+export interface BulkRow {
   locationId: number;
   jobRoleId: number;
   startDate: string;
@@ -99,7 +99,10 @@ export default function BulkRequestForm({
           </thead>
           <tbody>
             {rows.map((row, i) => (
-              <tr key={i} className="border-b border-gray-100 last:border-0">
+              <tr
+                key={i}
+                className="border-b border-gray-100 last:border-0 even:bg-gray-50"
+              >
                 <td className="py-2 pr-2">
                   <select
                     required

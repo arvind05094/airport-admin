@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import api from "../../lib/api";
+import api, { formatDate, formatTime } from "../../lib/api";
 import type { MyRosterAssignment } from "../../types/my";
 import EmptyState from "../../components/EmptyState";
 import LoadingSpinner from "../../components/LoadingSpinner";
@@ -45,12 +45,15 @@ export default function MyRosterPage() {
           </thead>
           <tbody>
             {assignments.map((a) => (
-              <tr key={a.id} className="border-b border-gray-100 last:border-0">
-                <td className="px-4 py-3">{a.date}</td>
+              <tr
+                key={a.id}
+                className="border-b border-gray-100 last:border-0 even:bg-gray-50"
+              >
+                <td className="px-4 py-3">{formatDate(a.date)}</td>
                 <td className="px-4 py-3 text-gray-500">{a.locationName}</td>
                 <td className="px-4 py-3 text-gray-500">{a.jobRoleName}</td>
                 <td className="px-4 py-3 text-gray-500">
-                  {a.startTime} – {a.endTime}
+                  {formatTime(a.startTime)} - {formatTime(a.endTime)}
                 </td>
               </tr>
             ))}

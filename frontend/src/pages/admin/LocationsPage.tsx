@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import api from "../../lib/api";
-import { Location } from "../../types/common";
 import PageHeader from "../../components/PageHeader";
 import EmptyState from "../../components/EmptyState";
 import LoadingSpinner from "../../components/LoadingSpinner";
+import type { Location } from "@/types/common";
 
 export default function LocationsPage() {
   const [locations, setLocations] = useState<Location[]>([]);
@@ -95,7 +95,7 @@ export default function LocationsPage() {
             {locations.map((loc) => (
               <tr
                 key={loc.id}
-                className="border-b border-gray-100 last:border-0"
+                className="border-b border-gray-100 last:border-0 even:bg-gray-50"
               >
                 <td className="px-4 py-3">{loc.name}</td>
                 <td className="px-4 py-3 text-right">

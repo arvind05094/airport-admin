@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import api from "../../lib/api";
-import { JobRole } from "../../types/common";
 import PageHeader from "../../components/PageHeader";
 import EmptyState from "../../components/EmptyState";
 import LoadingSpinner from "../../components/LoadingSpinner";
+import type { JobRole } from "@/types/common";
 
 export default function JobRolesPage() {
   const [jobRoles, setJobRoles] = useState<JobRole[]>([]);
@@ -95,7 +95,7 @@ export default function JobRolesPage() {
             {jobRoles.map((role) => (
               <tr
                 key={role.id}
-                className="border-b border-gray-100 last:border-0"
+                className="border-b border-gray-100 last:border-0 even:bg-gray-50"
               >
                 <td className="px-4 py-3">{role.name}</td>
                 <td className="px-4 py-3 text-right">

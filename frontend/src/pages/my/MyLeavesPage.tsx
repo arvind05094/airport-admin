@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import api from "../../lib/api";
-import { MyLeave } from "../../types/my";
+import api, { getErrorMessage } from "../../lib/api";
 import EmptyState from "../../components/EmptyState";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import PageHeader from "../../components/PageHeader";
 import StatusBadge from "../../components/StatusBadge";
+import type { MyLeave } from "@/types/my";
 
 interface ApplyForm {
   startDate: string;
@@ -16,7 +16,11 @@ interface ApplyForm {
 export default function MyLeavesPage() {
   const [leaves, setLeaves] = useState<MyLeave[]>([]);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState<ApplyForm>({ startDate: "", endDate: "", reason: "" });
+  const [form, setForm] = useState<ApplyForm>({
+    startDate: "",
+    endDate: "",
+    reason: "",
+  });
   const [loading, setLoading] = useState(true);
 
   const fetchLeaves = () => {
@@ -38,8 +42,8 @@ export default function MyLeavesPage() {
       setShowForm(false);
       setForm({ startDate: "", endDate: "", reason: "" });
       fetchLeaves();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message ?? "Failed to submit leave request");
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, "Failed to submit leave request"));
     }
   };
 
@@ -61,7 +65,10 @@ export default function MyLeavesPage() {
       <PageHeader
         title="My Leaves"
         subtitle="View and manage your leave requests"
-        action={{ label: showForm ? "Cancel" : "Apply for Leave", onClick: () => setShowForm(!showForm) }}
+        action={{
+          label: showForm ? "Cancel" : "Apply for Leave",
+          onClick: () => setShowForm(!showForm),
+        }}
       />
 
       {showForm && (
@@ -114,16 +121,27 @@ export default function MyLeavesPage() {
         <table className="w-full text-sm">
           <thead className="border-b border-gray-200 bg-gray-50">
             <tr>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Start Date</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">End Date</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Reason</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Status</th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600">
+                Start Date
+              </th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600">
+                End Date
+              </th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600">
+                Reason
+              </th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600">
+                Status
+              </th>
               <th className="text-left px-4 py-3 font-medium text-gray-600"></th>
             </tr>
           </thead>
           <tbody>
             {leaves.map((leave) => (
-              <tr key={leave.id} className="border-b border-gray-100 last:border-0">
+              <tr
+                key={leave.id}
+                className="border-b border-gray-100 last:border-0 even:bg-gray-50"
+              >
                 <td className="px-4 py-3">{leave.startDate}</td>
                 <td className="px-4 py-3">{leave.endDate}</td>
                 <td className="px-4 py-3 text-gray-500">{leave.reason}</td>

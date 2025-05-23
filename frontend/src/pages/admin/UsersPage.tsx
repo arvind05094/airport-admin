@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import api from "../../lib/api";
-import { AdminUser } from "../../types/admin";
-import { JobRole, ConstraintProfile } from "../../types/common";
 import EmptyState from "../../components/EmptyState";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import PageHeader from "../../components/PageHeader";
+import type { ConstraintProfile, JobRole } from "@/types/common";
+import type { AdminUser } from "@/types/admin";
 
 interface CreateForm {
   fullName: string;
@@ -28,7 +28,9 @@ const emptyForm: CreateForm = {
 export default function UsersPage() {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [jobRoles, setJobRoles] = useState<JobRole[]>([]);
-  const [constraintProfiles, setConstraintProfiles] = useState<ConstraintProfile[]>([]);
+  const [constraintProfiles, setConstraintProfiles] = useState<
+    ConstraintProfile[]
+  >([]);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<CreateForm>(emptyForm);
   const [loading, setLoading] = useState(true);
@@ -43,7 +45,9 @@ export default function UsersPage() {
   useEffect(() => {
     fetchUsers();
     api.get("/api/admin/job-roles").then((res) => setJobRoles(res.data));
-    api.get("/api/admin/constraint-profiles").then((res) => setConstraintProfiles(res.data));
+    api
+      .get("/api/admin/constraint-profiles")
+      .then((res) => setConstraintProfiles(res.data));
   }, []);
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -77,7 +81,10 @@ export default function UsersPage() {
       <PageHeader
         title="Users"
         subtitle="Manage system users"
-        action={{ label: showForm ? "Cancel" : "Add User", onClick: () => setShowForm(!showForm) }}
+        action={{
+          label: showForm ? "Cancel" : "Add User",
+          onClick: () => setShowForm(!showForm),
+        }}
       />
 
       {showForm && (
@@ -132,28 +139,40 @@ export default function UsersPage() {
             <select
               value={form.jobRoleId ?? ""}
               onChange={(e) =>
-                setForm({ ...form, jobRoleId: e.target.value ? +e.target.value : null })
+                setForm({
+                  ...form,
+                  jobRoleId: e.target.value ? +e.target.value : null,
+                })
               }
               className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
             >
               <option value="">None</option>
               {jobRoles.map((r) => (
-                <option key={r.id} value={r.id}>{r.name}</option>
+                <option key={r.id} value={r.id}>
+                  {r.name}
+                </option>
               ))}
             </select>
           </div>
           <div>
-            <label className="text-sm font-medium block mb-1">Constraint Profile</label>
+            <label className="text-sm font-medium block mb-1">
+              Constraint Profile
+            </label>
             <select
               value={form.constraintProfileId ?? ""}
               onChange={(e) =>
-                setForm({ ...form, constraintProfileId: e.target.value ? +e.target.value : null })
+                setForm({
+                  ...form,
+                  constraintProfileId: e.target.value ? +e.target.value : null,
+                })
               }
               className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
             >
               <option value="">None</option>
               {constraintProfiles.map((p) => (
-                <option key={p.id} value={p.id}>{p.name}</option>
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
               ))}
             </select>
           </div>
@@ -172,17 +191,30 @@ export default function UsersPage() {
         <table className="w-full text-sm">
           <thead className="border-b border-gray-200 bg-gray-50">
             <tr>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Name</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Email</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Role</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Job Role</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Constraint Profile</th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600">
+                Name
+              </th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600">
+                Email
+              </th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600">
+                Role
+              </th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600">
+                Job Role
+              </th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600">
+                Constraint Profile
+              </th>
               <th className="text-left px-4 py-3 font-medium text-gray-600"></th>
             </tr>
           </thead>
           <tbody>
             {users.map((user) => (
-              <tr key={user.id} className="border-b border-gray-100 last:border-0">
+              <tr
+                key={user.id}
+                className="border-b border-gray-100 last:border-0 even:bg-gray-50"
+              >
                 <td className="px-4 py-3">{user.fullName}</td>
                 <td className="px-4 py-3 text-gray-500">{user.email}</td>
                 <td className="px-4 py-3">
@@ -190,8 +222,12 @@ export default function UsersPage() {
                     {user.role}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-gray-500">{user.jobRoleName ?? "—"}</td>
-                <td className="px-4 py-3 text-gray-500">{user.constraintProfileName ?? "—"}</td>
+                <td className="px-4 py-3 text-gray-500">
+                  {user.jobRoleName ?? "—"}
+                </td>
+                <td className="px-4 py-3 text-gray-500">
+                  {user.constraintProfileName ?? "—"}
+                </td>
                 <td className="px-4 py-3 text-right">
                   <button
                     onClick={() => handleDelete(user.id)}
@@ -202,7 +238,9 @@ export default function UsersPage() {
                 </td>
               </tr>
             ))}
-            {users.length === 0 && <EmptyState colSpan={6} message="No users found" />}
+            {users.length === 0 && (
+              <EmptyState colSpan={6} message="No users found" />
+            )}
           </tbody>
         </table>
       </div>

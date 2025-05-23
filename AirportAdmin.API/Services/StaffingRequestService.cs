@@ -120,7 +120,7 @@ public class StaffingRequestService(AppDbContext db)
             .Include(s => s.Location)
             .Include(s => s.JobRole)
             .Where(s => s.CreatedById == userId)
-            .OrderByDescending(s => s.CreatedAt)
+            .OrderByDescending(s => s.Date)
             .Select(s => ToResponse(s))
             .ToListAsync();
 
@@ -129,7 +129,7 @@ public class StaffingRequestService(AppDbContext db)
             .Include(s => s.CreatedBy)
             .Include(s => s.Location)
             .Include(s => s.JobRole)
-            .OrderByDescending(s => s.CreatedAt)
+            .OrderByDescending(s => s.Date)
             .Select(s => ToResponse(s))
             .ToListAsync();
 

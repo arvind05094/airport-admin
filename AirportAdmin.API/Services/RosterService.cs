@@ -107,7 +107,7 @@ public class RosterService(AppDbContext db)
             .Include(a => a.User)
             .Include(a => a.Location)
             .Include(a => a.JobRole)
-            .OrderBy(a => a.Date)
+            .OrderByDescending(a => a.Date)
             .Select(a => ToResponse(a))
             .ToListAsync();
 
@@ -123,8 +123,14 @@ public class RosterService(AppDbContext db)
 
     public async Task<(bool success, string? error)> DeleteAsync(int id)
     {
-        var assignment = await db.ShiftAssignments.FindAsync(id);
+        var assignment = await db.ShiftAssignments
+            .Include(a => a.StaffingRequest)
+            .FirstOrDefaultAsync(a => a.Id == id);
+
         if (assignment == null) return (false, "Assignment not found.");
+
+        if (assignment.StaffingRequest != null)
+            assignment.StaffingRequest.Status = "Pending";
 
         db.ShiftAssignments.Remove(assignment);
         await db.SaveChangesAsync();

@@ -1,6 +1,6 @@
 import LoadingSpinner from "@/components/LoadingSpinner";
 import PageHeader from "@/components/PageHeader";
-import api from "@/lib/api";
+import api, { formatDate, formatTime, getErrorMessage } from "@/lib/api";
 import type { GenerateResult, RosterAssignment } from "@/types/admin";
 import type { JobRole, Location } from "@/types/common";
 import { useEffect, useState } from "react";
@@ -20,6 +20,8 @@ export default function RosterPage() {
   const [jobRoles, setJobRoles] = useState<JobRole[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [result, setResult] = useState<GenerateResult | null>(null);
+  const [filterFrom, setFilterFrom] = useState("");
+  const [filterTo, setFilterTo] = useState("");
   const [form, setForm] = useState<GenerateForm>({
     startDate: "",
     endDate: "",
@@ -52,17 +54,21 @@ export default function RosterPage() {
       fetchAssignments();
       setShowForm(false);
     } catch (err: unknown) {
-      toast.error(err.response?.data?.message ?? "Failed to generate roster");
+      toast.error(getErrorMessage(err, "Failed to generate roster"));
     } finally {
       setGenerating(false);
     }
   };
-
   const handleDelete = async (id: number) => {
-    if (!confirm("Remove this assignment?")) return;
+    if (
+      !confirm(
+        "Remove this assignment? The staffing request will be reopened and can be re-rostered.",
+      )
+    )
+      return;
     try {
       await api.delete(`/api/admin/roster/${id}`);
-      toast.success("Assignment removed");
+      toast.success("Assignment removed and staffing request reopened");
       fetchAssignments();
     } catch {
       toast.error("Failed to remove assignment");
@@ -82,6 +88,35 @@ export default function RosterPage() {
         }}
       />
 
+      <div className="flex gap-3 items-end mb-6">
+        <div>
+          <label className="text-sm font-medium block mb-1">From</label>
+          <input
+            type="date"
+            value={filterFrom}
+            onChange={(e) => setFilterFrom(e.target.value)}
+            className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+          />
+        </div>
+        <div>
+          <label className="text-sm font-medium block mb-1">To</label>
+          <input
+            type="date"
+            value={filterTo}
+            onChange={(e) => setFilterTo(e.target.value)}
+            className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+          />
+        </div>
+        <button
+          onClick={() => {
+            setFilterFrom("");
+            setFilterTo("");
+          }}
+          className="text-sm text-gray-500 hover:text-black transition pb-2"
+        >
+          Clear
+        </button>
+      </div>
       {showForm && (
         <form
           onSubmit={handleGenerate}
@@ -201,25 +236,36 @@ export default function RosterPage() {
             </tr>
           </thead>
           <tbody>
-            {assignments.map((a) => (
-              <tr key={a.id} className="border-b border-gray-100 last:border-0">
-                <td className="px-4 py-3">{a.userFullName}</td>
-                <td className="px-4 py-3 text-gray-500">{a.locationName}</td>
-                <td className="px-4 py-3 text-gray-500">{a.jobRoleName}</td>
-                <td className="px-4 py-3 text-gray-500">{a.date}</td>
-                <td className="px-4 py-3 text-gray-500">
-                  {a.startTime} - {a.endTime}
-                </td>
-                <td className="px-4 py-3 text-right">
-                  <button
-                    onClick={() => handleDelete(a.id)}
-                    className="text-xs text-red-500 hover:text-red-700 transition"
-                  >
-                    Remove
-                  </button>
-                </td>
-              </tr>
-            ))}
+            {assignments
+              .filter((a) => {
+                if (filterFrom && a.date < filterFrom) return false;
+                if (filterTo && a.date > filterTo) return false;
+                return true;
+              })
+              .map((a) => (
+                <tr
+                  key={a.id}
+                  className="border-b border-gray-100 last:border-0 even:bg-gray-50"
+                >
+                  <td className="px-4 py-3">{a.userFullName}</td>
+                  <td className="px-4 py-3 text-gray-500">{a.locationName}</td>
+                  <td className="px-4 py-3 text-gray-500">{a.jobRoleName}</td>
+                  <td className="px-4 py-3 text-gray-500">
+                    {formatDate(a.date)}
+                  </td>
+                  <td className="px-4 py-3 text-gray-500">
+                    {formatTime(a.startTime)} - {formatTime(a.endTime)}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <button
+                      onClick={() => handleDelete(a.id)}
+                      className="text-xs text-red-500 hover:text-red-700 transition"
+                    >
+                      Remove
+                    </button>
+                  </td>
+                </tr>
+              ))}
             {assignments.length === 0 && (
               <EmptyState colSpan={6} message="No assignments yet" />
             )}

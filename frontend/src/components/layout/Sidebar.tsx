@@ -11,6 +11,7 @@ const adminLinks = [
   { label: "Job Roles", href: "/admin/job-roles" },
   { label: "Constraint Profiles", href: "/admin/constraint-profiles" },
   { label: "Roster", href: "/admin/roster" },
+  { label: "My Roster", href: "/my/roster" },
   { label: "Availability", href: "/admin/availability" },
 ];
 

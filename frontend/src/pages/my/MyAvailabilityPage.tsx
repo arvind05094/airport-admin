@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import api from "../../lib/api";
+import api, { getErrorMessage } from "../../lib/api";
 import type { MyAvailability } from "../../types/my";
 import EmptyState from "../../components/EmptyState";
 import LoadingSpinner from "../../components/LoadingSpinner";
@@ -31,8 +31,8 @@ export default function MyAvailabilityPage() {
       setShowForm(false);
       setForm({ date: "", isAvailable: false });
       fetchRecords();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message ?? "Failed to submit");
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, "Failed to submit"));
     }
   };
 
@@ -102,7 +102,10 @@ export default function MyAvailabilityPage() {
           </thead>
           <tbody>
             {records.map((r) => (
-              <tr key={r.id} className="border-b border-gray-100 last:border-0">
+              <tr
+                key={r.id}
+                className="border-b border-gray-100 last:border-0 even:bg-gray-50"
+              >
                 <td className="px-4 py-3">{r.date}</td>
                 <td className="px-4 py-3">
                   <span
