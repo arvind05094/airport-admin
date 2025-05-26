@@ -1,3 +1,4 @@
+using AirportAdmin.API.DTOs;
 using AirportAdmin.API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,9 +15,9 @@ public class AdminShiftCoverController(ShiftCoverService shiftCoverService) : Co
         Ok(await shiftCoverService.GetAllAsync());
 
     [HttpPut("{id}/approve")]
-    public async Task<IActionResult> Approve(int id)
+    public async Task<IActionResult> Approve(int id, [FromBody] ApproveShiftCoverRequest request)
     {
-        var (result, error) = await shiftCoverService.UpdateStatusAsync(id, "Approved");
+        var (result, error) = await shiftCoverService.ApproveAsync(id, request.CoveredById);
         if (error != null) return BadRequest(new { message = error });
         return Ok(result);
     }
@@ -24,7 +25,7 @@ public class AdminShiftCoverController(ShiftCoverService shiftCoverService) : Co
     [HttpPut("{id}/reject")]
     public async Task<IActionResult> Reject(int id)
     {
-        var (result, error) = await shiftCoverService.UpdateStatusAsync(id, "Rejected");
+        var (result, error) = await shiftCoverService.RejectAsync(id);
         if (error != null) return BadRequest(new { message = error });
         return Ok(result);
     }

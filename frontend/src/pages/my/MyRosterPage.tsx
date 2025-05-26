@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import api, { formatDate, formatTime } from "../../lib/api";
+import { toast } from "sonner";
+import api, { formatDate, formatTime, getErrorMessage } from "../../lib/api";
 import type { MyRosterAssignment } from "../../types/my";
 import EmptyState from "../../components/EmptyState";
 import LoadingSpinner from "../../components/LoadingSpinner";
@@ -8,6 +9,9 @@ import PageHeader from "../../components/PageHeader";
 export default function MyRosterPage() {
   const [assignments, setAssignments] = useState<MyRosterAssignment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [coveringId, setCoveringId] = useState<number | null>(null);
+  const [reason, setReason] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     api.get("/api/my/roster").then((res) => {
@@ -15,6 +19,23 @@ export default function MyRosterPage() {
       setLoading(false);
     });
   }, []);
+
+  const handleRequestCover = async (assignmentId: number) => {
+    setSubmitting(true);
+    try {
+      await api.post("/api/my/shift-cover", {
+        shiftAssignmentId: assignmentId,
+        reason,
+      });
+      toast.success("Cover request submitted");
+      setCoveringId(null);
+      setReason("");
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, "Failed to submit cover request"));
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   if (loading) return <LoadingSpinner />;
 
@@ -41,24 +62,72 @@ export default function MyRosterPage() {
               <th className="text-left px-4 py-3 font-medium text-gray-600">
                 Time
               </th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600"></th>
             </tr>
           </thead>
           <tbody>
             {assignments.map((a) => (
-              <tr
-                key={a.id}
-                className="border-b border-gray-100 last:border-0 even:bg-gray-50"
-              >
-                <td className="px-4 py-3">{formatDate(a.date)}</td>
-                <td className="px-4 py-3 text-gray-500">{a.locationName}</td>
-                <td className="px-4 py-3 text-gray-500">{a.jobRoleName}</td>
-                <td className="px-4 py-3 text-gray-500">
-                  {formatTime(a.startTime)} - {formatTime(a.endTime)}
-                </td>
-              </tr>
+              <>
+                <tr
+                  key={a.id}
+                  className="border-b border-gray-100 last:border-0 even:bg-gray-50"
+                >
+                  <td className="px-4 py-3">{formatDate(a.date)}</td>
+                  <td className="px-4 py-3 text-gray-500">{a.locationName}</td>
+                  <td className="px-4 py-3 text-gray-500">{a.jobRoleName}</td>
+                  <td className="px-4 py-3 text-gray-500">
+                    {formatTime(a.startTime)} – {formatTime(a.endTime)}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    {coveringId === a.id ? (
+                      <button
+                        onClick={() => {
+                          setCoveringId(null);
+                          setReason("");
+                        }}
+                        className="text-xs text-gray-500 hover:text-black transition"
+                      >
+                        Cancel
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => setCoveringId(a.id)}
+                        className="text-xs text-blue-500 hover:text-blue-700 transition"
+                      >
+                        Request Cover
+                      </button>
+                    )}
+                  </td>
+                </tr>
+                {coveringId === a.id && (
+                  <tr
+                    key={`cover-${a.id}`}
+                    className="bg-blue-50 border-b border-gray-100"
+                  >
+                    <td colSpan={5} className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="text"
+                          placeholder="Reason for cover request..."
+                          value={reason}
+                          onChange={(e) => setReason(e.target.value)}
+                          className="flex-1 border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+                        />
+                        <button
+                          disabled={!reason.trim() || submitting}
+                          onClick={() => handleRequestCover(a.id)}
+                          className="bg-black text-white text-sm px-4 py-1.5 rounded-md hover:bg-gray-800 transition disabled:opacity-50"
+                        >
+                          {submitting ? "Submitting..." : "Submit"}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </>
             ))}
             {assignments.length === 0 && (
-              <EmptyState colSpan={4} message="No shifts assigned yet" />
+              <EmptyState colSpan={5} message="No shifts assigned yet" />
             )}
           </tbody>
         </table>

@@ -192,6 +192,9 @@ namespace AirportAdmin.API.Migrations
                     b.Property<int>("RequesterId")
                         .HasColumnType("integer");
 
+                    b.Property<int>("ShiftAssignmentId")
+                        .HasColumnType("integer");
+
                     b.Property<DateOnly>("ShiftDate")
                         .HasColumnType("date");
 
@@ -210,6 +213,8 @@ namespace AirportAdmin.API.Migrations
                     b.HasIndex("CoveredById");
 
                     b.HasIndex("RequesterId");
+
+                    b.HasIndex("ShiftAssignmentId");
 
                     b.ToTable("ShiftCoverRequests");
                 });
@@ -385,9 +390,17 @@ namespace AirportAdmin.API.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("AirportAdmin.API.Entities.ShiftAssignment", "ShiftAssignment")
+                        .WithMany()
+                        .HasForeignKey("ShiftAssignmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("CoveredBy");
 
                     b.Navigation("Requester");
+
+                    b.Navigation("ShiftAssignment");
                 });
 
             modelBuilder.Entity("AirportAdmin.API.Entities.StaffAvailability", b =>

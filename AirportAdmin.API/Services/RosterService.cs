@@ -49,7 +49,15 @@ public class RosterService(AppDbContext db)
         foreach (var sr in staffingRequests)
         {
             var shiftHours = (sr.EndTime - sr.StartTime).TotalHours;
-            var eligibleUsers = allUsers.Where(u => u.JobRoleId == sr.JobRoleId).ToList();
+            var eligibleUsers = allUsers
+                .Where(u => u.JobRoleId == sr.JobRoleId)
+                .OrderBy(u => existingAssignments
+                    .Concat(newAssignments)
+                    .Where(a => a.UserId == u.Id &&
+                                a.Date >= sr.Date.AddDays(-(int)sr.Date.DayOfWeek) &&
+                                a.Date <= sr.Date.AddDays(6 - (int)sr.Date.DayOfWeek))
+                    .Sum(a => (a.EndTime - a.StartTime).TotalHours))
+                .ToList();
             var assigned = 0;
 
             foreach (var user in eligibleUsers)

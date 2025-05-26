@@ -7,6 +7,8 @@ public class ShiftCoverRequest
     public User Requester { get; set; } = null!;
     public int? CoveredById { get; set; }
     public User? CoveredBy { get; set; }
+    public int ShiftAssignmentId { get; set; }
+    public ShiftAssignment ShiftAssignment { get; set; } = null!;
     public DateOnly ShiftDate { get; set; }
     public TimeOnly ShiftStartTime { get; set; }
     public TimeOnly ShiftEndTime { get; set; }

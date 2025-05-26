@@ -20,13 +20,13 @@ export interface AdminLeave {
   status: string;
   createdAt: string;
 }
-
 export interface AdminShiftCover {
   id: number;
   requesterId: number;
   requesterFullName: string;
   coveredById: number | null;
   coveredByFullName: string | null;
+  shiftAssignmentId: number;
   shiftDate: string;
   shiftStartTime: string;
   shiftEndTime: string;
@@ -34,7 +34,6 @@ export interface AdminShiftCover {
   status: string;
   createdAt: string;
 }
-
 export interface AdminStaffingRequest {
   id: number;
   createdById: number;
