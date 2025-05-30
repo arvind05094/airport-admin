@@ -1,11 +1,12 @@
-import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import api, { getErrorMessage } from "../../lib/api";
+import { useFetch } from "../../hooks/useFetch";
+import type { MyLeave } from "../../types/my";
 import EmptyState from "../../components/EmptyState";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import PageHeader from "../../components/PageHeader";
 import StatusBadge from "../../components/StatusBadge";
-import type { MyLeave } from "@/types/my";
+import { useState } from "react";
+import api, { getErrorMessage } from "@/lib/api";
 
 interface ApplyForm {
   startDate: string;
@@ -14,25 +15,18 @@ interface ApplyForm {
 }
 
 export default function MyLeavesPage() {
-  const [leaves, setLeaves] = useState<MyLeave[]>([]);
+  const {
+    data: leaves,
+    loading,
+    error,
+    refetch,
+  } = useFetch<MyLeave[]>("/api/my/leaves");
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<ApplyForm>({
     startDate: "",
     endDate: "",
     reason: "",
   });
-  const [loading, setLoading] = useState(true);
-
-  const fetchLeaves = () => {
-    api.get("/api/my/leaves").then((res) => {
-      setLeaves(res.data);
-      setLoading(false);
-    });
-  };
-
-  useEffect(() => {
-    fetchLeaves();
-  }, []);
 
   const handleApply = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,7 +35,7 @@ export default function MyLeavesPage() {
       toast.success("Leave request submitted");
       setShowForm(false);
       setForm({ startDate: "", endDate: "", reason: "" });
-      fetchLeaves();
+      refetch();
     } catch (err: unknown) {
       toast.error(getErrorMessage(err, "Failed to submit leave request"));
     }
@@ -52,14 +46,17 @@ export default function MyLeavesPage() {
     try {
       await api.delete(`/api/my/leaves/${id}`);
       toast.success("Leave request cancelled");
-      fetchLeaves();
+      refetch();
     } catch {
       toast.error("Failed to cancel leave request");
     }
   };
 
   if (loading) return <LoadingSpinner />;
-
+  if (error)
+    return (
+      <div className="text-center py-12 text-red-500 text-sm">{error}</div>
+    );
   return (
     <div>
       <PageHeader
@@ -137,7 +134,7 @@ export default function MyLeavesPage() {
             </tr>
           </thead>
           <tbody>
-            {leaves.map((leave) => (
+            {(leaves ?? []).map((leave) => (
               <tr
                 key={leave.id}
                 className="border-b border-gray-100 last:border-0 even:bg-gray-50"
@@ -160,7 +157,7 @@ export default function MyLeavesPage() {
                 </td>
               </tr>
             ))}
-            {leaves.length === 0 && (
+            {(leaves ?? []).length === 0 && (
               <EmptyState colSpan={5} message="No leave requests found" />
             )}
           </tbody>

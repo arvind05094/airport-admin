@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import api from "../../lib/api";
+import { useFetch } from "../../hooks/useFetch";
 import PageHeader from "../../components/PageHeader";
 import EmptyState from "../../components/EmptyState";
 import LoadingSpinner from "../../components/LoadingSpinner";
@@ -21,21 +22,14 @@ const emptyForm: CreateForm = {
 };
 
 export default function ConstraintProfilesPage() {
-  const [profiles, setProfiles] = useState<ConstraintProfile[]>([]);
+  const {
+    data: profiles,
+    loading,
+    error,
+    refetch,
+  } = useFetch<ConstraintProfile[]>("/api/admin/constraint-profiles");
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<CreateForm>(emptyForm);
-  const [loading, setLoading] = useState(true);
-
-  const fetchProfiles = () => {
-    api.get("/api/admin/constraint-profiles").then((res) => {
-      setProfiles(res.data);
-      setLoading(false);
-    });
-  };
-
-  useEffect(() => {
-    fetchProfiles();
-  }, []);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,7 +38,7 @@ export default function ConstraintProfilesPage() {
       toast.success("Constraint profile created");
       setShowForm(false);
       setForm(emptyForm);
-      fetchProfiles();
+      refetch();
     } catch {
       toast.error("Failed to create constraint profile");
     }
@@ -55,14 +49,17 @@ export default function ConstraintProfilesPage() {
     try {
       await api.delete(`/api/admin/constraint-profiles/${id}`);
       toast.success("Profile deleted");
-      fetchProfiles();
+      refetch();
     } catch {
       toast.error("Failed to delete profile");
     }
   };
 
   if (loading) return <LoadingSpinner />;
-
+  if (error)
+    return (
+      <div className="text-center py-12 text-red-500 text-sm">{error}</div>
+    );
   return (
     <div>
       <PageHeader
@@ -167,7 +164,7 @@ export default function ConstraintProfilesPage() {
             </tr>
           </thead>
           <tbody>
-            {profiles.map((profile) => (
+            {(profiles ?? []).map((profile) => (
               <tr
                 key={profile.id}
                 className="border-b border-gray-100 last:border-0 even:bg-gray-50"
@@ -192,7 +189,7 @@ export default function ConstraintProfilesPage() {
                 </td>
               </tr>
             ))}
-            {profiles.length === 0 && (
+            {(profiles ?? []).length === 0 && (
               <EmptyState colSpan={5} message="No constraint profiles found" />
             )}
           </tbody>

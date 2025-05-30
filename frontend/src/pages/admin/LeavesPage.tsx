@@ -1,39 +1,35 @@
-import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import api from "../../lib/api";
+import { useFetch } from "../../hooks/useFetch";
+import type { AdminLeave } from "../../types/admin";
 import EmptyState from "../../components/EmptyState";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import PageHeader from "../../components/PageHeader";
 import StatusBadge from "../../components/StatusBadge";
-import type { AdminLeave } from "@/types/admin";
 
 export default function LeavesPage() {
-  const [leaves, setLeaves] = useState<AdminLeave[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const fetchLeaves = () => {
-    api.get("/api/admin/leaves").then((res) => {
-      setLeaves(res.data);
-      setLoading(false);
-    });
-  };
-
-  useEffect(() => {
-    fetchLeaves();
-  }, []);
+  const {
+    data: leaves,
+    loading,
+    error,
+    refetch,
+  } = useFetch<AdminLeave[]>("/api/admin/leaves");
 
   const handleAction = async (id: number, action: "approve" | "reject") => {
     try {
       await api.put(`/api/admin/leaves/${id}/${action}`);
       toast.success(`Leave ${action}d`);
-      fetchLeaves();
+      refetch();
     } catch {
       toast.error(`Failed to ${action} leave`);
     }
   };
 
   if (loading) return <LoadingSpinner />;
-
+  if (error)
+    return (
+      <div className="text-center py-12 text-red-500 text-sm">{error}</div>
+    );
   return (
     <div>
       <PageHeader
@@ -64,7 +60,7 @@ export default function LeavesPage() {
             </tr>
           </thead>
           <tbody>
-            {leaves.map((leave) => (
+            {(leaves ?? []).map((leave) => (
               <tr
                 key={leave.id}
                 className="border-b border-gray-100 last:border-0 even:bg-gray-50"
@@ -96,7 +92,7 @@ export default function LeavesPage() {
                 </td>
               </tr>
             ))}
-            {leaves.length === 0 && (
+            {(leaves ?? []).length === 0 && (
               <EmptyState colSpan={6} message="No leave requests found" />
             )}
           </tbody>

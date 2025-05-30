@@ -1,23 +1,23 @@
-import { useEffect, useState } from "react";
-import api, { formatDate, formatTime } from "../../lib/api";
+import { useFetch } from "../../hooks/useFetch";
 import type { MyShiftCover } from "../../types/my";
 import EmptyState from "../../components/EmptyState";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import PageHeader from "../../components/PageHeader";
 import StatusBadge from "../../components/StatusBadge";
+import { formatDate, formatTime } from "../../lib/api";
 
 export default function MyShiftCoverPage() {
-  const [requests, setRequests] = useState<MyShiftCover[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    api.get("/api/my/shift-cover").then((res) => {
-      setRequests(res.data);
-      setLoading(false);
-    });
-  }, []);
+  const {
+    data: requests,
+    loading,
+    error,
+  } = useFetch<MyShiftCover[]>("/api/my/shift-cover");
 
   if (loading) return <LoadingSpinner />;
+  if (error)
+    return (
+      <div className="text-center py-12 text-red-500 text-sm">{error}</div>
+    );
 
   return (
     <div>
@@ -45,7 +45,7 @@ export default function MyShiftCoverPage() {
             </tr>
           </thead>
           <tbody>
-            {requests.map((req) => (
+            {(requests ?? []).map((req) => (
               <tr
                 key={req.id}
                 className="border-b border-gray-100 last:border-0 even:bg-gray-50"
@@ -61,7 +61,7 @@ export default function MyShiftCoverPage() {
                 </td>
               </tr>
             ))}
-            {requests.length === 0 && (
+            {(requests ?? []).length === 0 && (
               <EmptyState colSpan={4} message="No shift cover requests found" />
             )}
           </tbody>

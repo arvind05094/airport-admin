@@ -1,27 +1,21 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import api from "../../lib/api";
+import { useFetch } from "../../hooks/useFetch";
 import PageHeader from "../../components/PageHeader";
 import EmptyState from "../../components/EmptyState";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import type { Location } from "@/types/common";
 
 export default function LocationsPage() {
-  const [locations, setLocations] = useState<Location[]>([]);
+  const {
+    data: locations,
+    loading,
+    error,
+    refetch,
+  } = useFetch<Location[]>("/api/admin/locations");
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState("");
-  const [loading, setLoading] = useState(true);
-
-  const fetchLocations = () => {
-    api.get("/api/admin/locations").then((res) => {
-      setLocations(res.data);
-      setLoading(false);
-    });
-  };
-
-  useEffect(() => {
-    fetchLocations();
-  }, []);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,7 +24,7 @@ export default function LocationsPage() {
       toast.success("Location created");
       setShowForm(false);
       setName("");
-      fetchLocations();
+      refetch();
     } catch {
       toast.error("Failed to create location");
     }
@@ -41,14 +35,17 @@ export default function LocationsPage() {
     try {
       await api.delete(`/api/admin/locations/${id}`);
       toast.success("Location deleted");
-      fetchLocations();
+      refetch();
     } catch {
       toast.error("Failed to delete location");
     }
   };
 
   if (loading) return <LoadingSpinner />;
-
+  if (error)
+    return (
+      <div className="text-center py-12 text-red-500 text-sm">{error}</div>
+    );
   return (
     <div>
       <PageHeader
@@ -92,7 +89,7 @@ export default function LocationsPage() {
             </tr>
           </thead>
           <tbody>
-            {locations.map((loc) => (
+            {(locations ?? []).map((loc) => (
               <tr
                 key={loc.id}
                 className="border-b border-gray-100 last:border-0 even:bg-gray-50"
@@ -108,7 +105,7 @@ export default function LocationsPage() {
                 </td>
               </tr>
             ))}
-            {locations.length === 0 && (
+            {(locations ?? []).length === 0 && (
               <EmptyState colSpan={2} message="No locations found" />
             )}
           </tbody>

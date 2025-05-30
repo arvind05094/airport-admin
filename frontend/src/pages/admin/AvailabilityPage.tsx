@@ -1,22 +1,19 @@
-import { useEffect, useState } from "react";
-import api from "../../lib/api";
+import { useFetch } from "../../hooks/useFetch";
 import type { AdminAvailability } from "../../types/admin";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import PageHeader from "../../components/PageHeader";
-
 export default function AvailabilityPage() {
-  const [records, setRecords] = useState<AdminAvailability[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    api.get("/api/admin/availability").then((res) => {
-      setRecords(res.data);
-      setLoading(false);
-    });
-  }, []);
+  const {
+    data: records,
+    loading,
+    error,
+  } = useFetch<AdminAvailability[]>("/api/admin/availability");
 
   if (loading) return <LoadingSpinner />;
-
+  if (error)
+    return (
+      <div className="text-center py-12 text-red-500 text-sm">{error}</div>
+    );
   return (
     <div>
       <PageHeader
@@ -40,7 +37,7 @@ export default function AvailabilityPage() {
             </tr>
           </thead>
           <tbody>
-            {records.map((r) => (
+            {(records ?? []).map((r) => (
               <tr
                 key={r.id}
                 className="border-b border-gray-100 last:border-0 even:bg-gray-50"

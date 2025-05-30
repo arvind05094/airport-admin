@@ -1,30 +1,23 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import api, { formatDate, formatTime, getErrorMessage } from "../../lib/api";
+import { useFetch } from "../../hooks/useFetch";
+import type { AdminShiftCover, AdminUser } from "../../types/admin";
 import EmptyState from "../../components/EmptyState";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import PageHeader from "../../components/PageHeader";
 import StatusBadge from "../../components/StatusBadge";
-import type { AdminShiftCover, AdminUser } from "../../types/admin";
 
 export default function ShiftCoverPage() {
-  const [requests, setRequests] = useState<AdminShiftCover[]>([]);
-  const [users, setUsers] = useState<AdminUser[]>([]);
-  const [loading, setLoading] = useState(true);
+  const {
+    data: requests,
+    loading,
+    error,
+    refetch,
+  } = useFetch<AdminShiftCover[]>("/api/admin/shift-cover");
+  const { data: users } = useFetch<AdminUser[]>("/api/admin/users");
   const [approvingId, setApprovingId] = useState<number | null>(null);
   const [coveredById, setCoveredById] = useState<number>(0);
-
-  const fetchRequests = () => {
-    api.get("/api/admin/shift-cover").then((res) => {
-      setRequests(res.data);
-      setLoading(false);
-    });
-  };
-
-  useEffect(() => {
-    fetchRequests();
-    api.get("/api/admin/users").then((res) => setUsers(res.data));
-  }, []);
 
   const handleApprove = async (id: number) => {
     if (!coveredById) {
@@ -36,7 +29,7 @@ export default function ShiftCoverPage() {
       toast.success("Request approved and shift reassigned");
       setApprovingId(null);
       setCoveredById(0);
-      fetchRequests();
+      refetch();
     } catch (err: unknown) {
       toast.error(getErrorMessage(err, "Failed to approve request"));
     }
@@ -46,14 +39,17 @@ export default function ShiftCoverPage() {
     try {
       await api.put(`/api/admin/shift-cover/${id}/reject`);
       toast.success("Request rejected");
-      fetchRequests();
+      refetch();
     } catch (err: unknown) {
       toast.error(getErrorMessage(err, "Failed to reject request"));
     }
   };
 
   if (loading) return <LoadingSpinner />;
-
+  if (error)
+    return (
+      <div className="text-center py-12 text-red-500 text-sm">{error}</div>
+    );
   return (
     <div>
       <PageHeader
@@ -87,7 +83,7 @@ export default function ShiftCoverPage() {
             </tr>
           </thead>
           <tbody>
-            {requests.map((req) => (
+            {(requests ?? []).map((req) => (
               <>
                 <tr
                   key={req.id}
@@ -143,7 +139,7 @@ export default function ShiftCoverPage() {
                           className="flex-1 border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-black"
                         >
                           <option value={0}>Select covering staff...</option>
-                          {users
+                          {(users ?? [])
                             .filter((u) => u.id !== req.requesterId)
                             .map((u) => (
                               <option key={u.id} value={u.id}>
@@ -169,7 +165,7 @@ export default function ShiftCoverPage() {
                 )}
               </>
             ))}
-            {requests.length === 0 && (
+            {(requests ?? []).length === 0 && (
               <EmptyState colSpan={7} message="No shift cover requests found" />
             )}
           </tbody>

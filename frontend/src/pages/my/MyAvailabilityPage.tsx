@@ -1,27 +1,21 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import api, { getErrorMessage } from "../../lib/api";
+import { useFetch } from "../../hooks/useFetch";
 import type { MyAvailability } from "../../types/my";
 import EmptyState from "../../components/EmptyState";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import PageHeader from "../../components/PageHeader";
 
 export default function MyAvailabilityPage() {
-  const [records, setRecords] = useState<MyAvailability[]>([]);
+  const {
+    data: records,
+    loading,
+    error,
+    refetch,
+  } = useFetch<MyAvailability[]>("/api/my/availability");
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ date: "", isAvailable: false });
-  const [loading, setLoading] = useState(true);
-
-  const fetchRecords = () => {
-    api.get("/api/my/availability").then((res) => {
-      setRecords(res.data);
-      setLoading(false);
-    });
-  };
-
-  useEffect(() => {
-    fetchRecords();
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,14 +24,17 @@ export default function MyAvailabilityPage() {
       toast.success("Availability updated");
       setShowForm(false);
       setForm({ date: "", isAvailable: false });
-      fetchRecords();
+      refetch();
     } catch (err: unknown) {
       toast.error(getErrorMessage(err, "Failed to submit"));
     }
   };
 
   if (loading) return <LoadingSpinner />;
-
+  if (error)
+    return (
+      <div className="text-center py-12 text-red-500 text-sm">{error}</div>
+    );
   return (
     <div>
       <PageHeader
@@ -101,7 +98,7 @@ export default function MyAvailabilityPage() {
             </tr>
           </thead>
           <tbody>
-            {records.map((r) => (
+            {(records ?? []).map((r) => (
               <tr
                 key={r.id}
                 className="border-b border-gray-100 last:border-0 even:bg-gray-50"
@@ -116,7 +113,7 @@ export default function MyAvailabilityPage() {
                 </td>
               </tr>
             ))}
-            {records.length === 0 && (
+            {(records ?? []).length === 0 && (
               <EmptyState colSpan={2} message="No availability records" />
             )}
           </tbody>

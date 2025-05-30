@@ -1,11 +1,12 @@
-import LoadingSpinner from "@/components/LoadingSpinner";
-import PageHeader from "@/components/PageHeader";
+import { useState } from "react";
+import { toast } from "sonner";
 import api, { formatDate, formatTime, getErrorMessage } from "@/lib/api";
+import { useFetch } from "@/hooks/useFetch";
 import type { GenerateResult, RosterAssignment } from "@/types/admin";
 import type { JobRole, Location } from "@/types/common";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
 import EmptyState from "@/components/EmptyState";
+import LoadingSpinner from "@/components/LoadingSpinner";
+import PageHeader from "@/components/PageHeader";
 
 interface GenerateForm {
   startDate: string;
@@ -15,9 +16,14 @@ interface GenerateForm {
 }
 
 export default function RosterPage() {
-  const [assignments, setAssignments] = useState<RosterAssignment[]>([]);
-  const [locations, setLocations] = useState<Location[]>([]);
-  const [jobRoles, setJobRoles] = useState<JobRole[]>([]);
+  const {
+    data: assignments,
+    loading,
+    error,
+    refetch,
+  } = useFetch<RosterAssignment[]>("/api/admin/roster");
+  const { data: locations } = useFetch<Location[]>("/api/admin/locations");
+  const { data: jobRoles } = useFetch<JobRole[]>("/api/admin/job-roles");
   const [showForm, setShowForm] = useState(false);
   const [result, setResult] = useState<GenerateResult | null>(null);
   const [filterFrom, setFilterFrom] = useState("");
@@ -28,21 +34,7 @@ export default function RosterPage() {
     locationId: null,
     jobRoleId: null,
   });
-  const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
-
-  const fetchAssignments = () => {
-    api.get("/api/admin/roster").then((res) => {
-      setAssignments(res.data);
-      setLoading(false);
-    });
-  };
-
-  useEffect(() => {
-    fetchAssignments();
-    api.get("/api/admin/locations").then((res) => setLocations(res.data));
-    api.get("/api/admin/job-roles").then((res) => setJobRoles(res.data));
-  }, []);
 
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,7 +43,7 @@ export default function RosterPage() {
       const res = await api.post("/api/admin/roster/generate", form);
       setResult(res.data);
       toast.success(`Generated ${res.data.totalAssignments} assignments`);
-      fetchAssignments();
+      refetch();
       setShowForm(false);
     } catch (err: unknown) {
       toast.error(getErrorMessage(err, "Failed to generate roster"));
@@ -59,6 +51,7 @@ export default function RosterPage() {
       setGenerating(false);
     }
   };
+
   const handleDelete = async (id: number) => {
     if (
       !confirm(
@@ -69,14 +62,17 @@ export default function RosterPage() {
     try {
       await api.delete(`/api/admin/roster/${id}`);
       toast.success("Assignment removed and staffing request reopened");
-      fetchAssignments();
+      refetch();
     } catch {
       toast.error("Failed to remove assignment");
     }
   };
 
   if (loading) return <LoadingSpinner />;
-
+  if (error)
+    return (
+      <div className="text-center py-12 text-red-500 text-sm">{error}</div>
+    );
   return (
     <div>
       <PageHeader
@@ -157,7 +153,7 @@ export default function RosterPage() {
               className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
             >
               <option value="">All locations</option>
-              {locations.map((l) => (
+              {(locations ?? []).map((l) => (
                 <option key={l.id} value={l.id}>
                   {l.name}
                 </option>
@@ -179,7 +175,7 @@ export default function RosterPage() {
               className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
             >
               <option value="">All roles</option>
-              {jobRoles.map((r) => (
+              {(jobRoles ?? []).map((r) => (
                 <option key={r.id} value={r.id}>
                   {r.name}
                 </option>
@@ -236,7 +232,7 @@ export default function RosterPage() {
             </tr>
           </thead>
           <tbody>
-            {assignments
+            {(assignments ?? [])
               .filter((a) => {
                 if (filterFrom && a.date < filterFrom) return false;
                 if (filterTo && a.date > filterTo) return false;
@@ -266,7 +262,7 @@ export default function RosterPage() {
                   </td>
                 </tr>
               ))}
-            {assignments.length === 0 && (
+            {(assignments ?? []).length === 0 && (
               <EmptyState colSpan={6} message="No assignments yet" />
             )}
           </tbody>

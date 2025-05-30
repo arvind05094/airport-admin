@@ -1,39 +1,35 @@
-import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import api, { formatDate } from "../../lib/api";
+import { useFetch } from "../../hooks/useFetch";
+import type { AdminStaffingRequest } from "../../types/admin";
 import EmptyState from "../../components/EmptyState";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import PageHeader from "../../components/PageHeader";
 import StatusBadge from "../../components/StatusBadge";
-import type { AdminStaffingRequest } from "@/types/admin";
 
 export default function StaffingRequestsPage() {
-  const [requests, setRequests] = useState<AdminStaffingRequest[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const fetchRequests = () => {
-    api.get("/api/admin/staffing-requests").then((res) => {
-      setRequests(res.data);
-      setLoading(false);
-    });
-  };
-
-  useEffect(() => {
-    fetchRequests();
-  }, []);
+  const {
+    data: requests,
+    loading,
+    error,
+    refetch,
+  } = useFetch<AdminStaffingRequest[]>("/api/admin/staffing-requests");
 
   const handleFulfil = async (id: number) => {
     try {
       await api.put(`/api/admin/staffing-requests/${id}/fulfil`);
       toast.success("Request marked as fulfilled");
-      fetchRequests();
+      refetch();
     } catch {
       toast.error("Failed to fulfil request");
     }
   };
 
   if (loading) return <LoadingSpinner />;
-
+  if (error)
+    return (
+      <div className="text-center py-12 text-red-500 text-sm">{error}</div>
+    );
   return (
     <div>
       <PageHeader
@@ -73,7 +69,7 @@ export default function StaffingRequestsPage() {
             </tr>
           </thead>
           <tbody>
-            {requests.map((req) => (
+            {(requests ?? []).map((req) => (
               <tr
                 key={req.id}
                 className="border-b border-gray-100 last:border-0 even:bg-gray-50"
@@ -104,7 +100,7 @@ export default function StaffingRequestsPage() {
                 </td>
               </tr>
             ))}
-            {requests.length === 0 && (
+            {(requests ?? []).length === 0 && (
               <EmptyState colSpan={9} message="No staffing requests found" />
             )}
           </tbody>

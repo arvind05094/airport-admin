@@ -1,16 +1,14 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import api, { formatDate, getErrorMessage } from "../../lib/api";
+import { useFetch } from "../../hooks/useFetch";
+import type { MyStaffingRequest } from "../../types/my";
+import type { Location, JobRole } from "../../types/common";
 import EmptyState from "../../components/EmptyState";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import PageHeader from "../../components/PageHeader";
 import StatusBadge from "../../components/StatusBadge";
-import BulkRequestForm, {
-  type BulkRow,
-} from "../../components/BulkRequestForm";
-import type { MyStaffingRequest } from "@/types/my";
-import type { JobRole, Location } from "@/types/common";
-
+import BulkRequestForm, { type BulkRow } from "@/components/BulkRequestForm";
 interface CreateForm {
   locationId: number;
   jobRoleId: number;
@@ -34,25 +32,16 @@ const emptyForm: CreateForm = {
 type FormMode = "none" | "single" | "bulk";
 
 export default function MyStaffingRequestsPage() {
-  const [requests, setRequests] = useState<MyStaffingRequest[]>([]);
-  const [locations, setLocations] = useState<Location[]>([]);
-  const [jobRoles, setJobRoles] = useState<JobRole[]>([]);
+  const {
+    data: requests,
+    loading,
+    error,
+    refetch,
+  } = useFetch<MyStaffingRequest[]>("/api/my/staffing-requests");
+  const { data: locations } = useFetch<Location[]>("/api/admin/locations");
+  const { data: jobRoles } = useFetch<JobRole[]>("/api/admin/job-roles");
   const [mode, setMode] = useState<FormMode>("none");
   const [form, setForm] = useState<CreateForm>(emptyForm);
-  const [loading, setLoading] = useState(true);
-
-  const fetchRequests = () => {
-    api.get("/api/my/staffing-requests").then((res) => {
-      setRequests(res.data);
-      setLoading(false);
-    });
-  };
-
-  useEffect(() => {
-    fetchRequests();
-    api.get("/api/admin/locations").then((res) => setLocations(res.data));
-    api.get("/api/admin/job-roles").then((res) => setJobRoles(res.data));
-  }, []);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,7 +50,7 @@ export default function MyStaffingRequestsPage() {
       toast.success("Staffing request created");
       setMode("none");
       setForm(emptyForm);
-      fetchRequests();
+      refetch();
     } catch (err: unknown) {
       toast.error(getErrorMessage(err, "Failed to create request"));
     }
@@ -72,9 +61,9 @@ export default function MyStaffingRequestsPage() {
       await api.post("/api/my/staffing-requests/bulk", { requests: rows });
       toast.success("Bulk staffing requests created");
       setMode("none");
-      fetchRequests();
+      refetch();
     } catch (err: unknown) {
-      toast.error(getErrorMessage(err, "Failed to create request"));
+      toast.error(getErrorMessage(err, "Failed to create bulk requests"));
     }
   };
 
@@ -83,14 +72,17 @@ export default function MyStaffingRequestsPage() {
     try {
       await api.delete(`/api/my/staffing-requests/${id}`);
       toast.success("Request cancelled");
-      fetchRequests();
+      refetch();
     } catch {
       toast.error("Failed to cancel request");
     }
   };
 
   if (loading) return <LoadingSpinner />;
-
+  if (error)
+    return (
+      <div className="text-center py-12 text-red-500 text-sm">{error}</div>
+    );
   return (
     <div>
       <PageHeader
@@ -136,7 +128,7 @@ export default function MyStaffingRequestsPage() {
               className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
             >
               <option value={0}>Select location</option>
-              {locations.map((l) => (
+              {(locations ?? []).map((l) => (
                 <option key={l.id} value={l.id}>
                   {l.name}
                 </option>
@@ -152,7 +144,7 @@ export default function MyStaffingRequestsPage() {
               className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
             >
               <option value={0}>Select job role</option>
-              {jobRoles.map((r) => (
+              {(jobRoles ?? []).map((r) => (
                 <option key={r.id} value={r.id}>
                   {r.name}
                 </option>
@@ -234,8 +226,8 @@ export default function MyStaffingRequestsPage() {
 
       {mode === "bulk" && (
         <BulkRequestForm
-          locations={locations}
-          jobRoles={jobRoles}
+          locations={locations ?? []}
+          jobRoles={jobRoles ?? []}
           onSubmit={handleBulkSubmit}
           onCancel={() => setMode("none")}
         />
@@ -270,7 +262,7 @@ export default function MyStaffingRequestsPage() {
             </tr>
           </thead>
           <tbody>
-            {requests.map((req) => (
+            {(requests ?? []).map((req) => (
               <tr
                 key={req.id}
                 className="border-b border-gray-100 last:border-0 even:bg-gray-50"
@@ -300,7 +292,7 @@ export default function MyStaffingRequestsPage() {
                 </td>
               </tr>
             ))}
-            {requests.length === 0 && (
+            {(requests ?? []).length === 0 && (
               <EmptyState colSpan={8} message="No staffing requests found" />
             )}
           </tbody>

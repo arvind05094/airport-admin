@@ -1,27 +1,21 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import api from "../../lib/api";
+import { useFetch } from "../../hooks/useFetch";
 import PageHeader from "../../components/PageHeader";
 import EmptyState from "../../components/EmptyState";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import type { JobRole } from "@/types/common";
 
 export default function JobRolesPage() {
-  const [jobRoles, setJobRoles] = useState<JobRole[]>([]);
+  const {
+    data: jobRoles,
+    loading,
+    error,
+    refetch,
+  } = useFetch<JobRole[]>("/api/admin/job-roles");
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState("");
-  const [loading, setLoading] = useState(true);
-
-  const fetchJobRoles = () => {
-    api.get("/api/admin/job-roles").then((res) => {
-      setJobRoles(res.data);
-      setLoading(false);
-    });
-  };
-
-  useEffect(() => {
-    fetchJobRoles();
-  }, []);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,7 +24,7 @@ export default function JobRolesPage() {
       toast.success("Job role created");
       setShowForm(false);
       setName("");
-      fetchJobRoles();
+      refetch();
     } catch {
       toast.error("Failed to create job role");
     }
@@ -41,14 +35,17 @@ export default function JobRolesPage() {
     try {
       await api.delete(`/api/admin/job-roles/${id}`);
       toast.success("Job role deleted");
-      fetchJobRoles();
+      refetch();
     } catch {
       toast.error("Failed to delete job role");
     }
   };
 
   if (loading) return <LoadingSpinner />;
-
+  if (error)
+    return (
+      <div className="text-center py-12 text-red-500 text-sm">{error}</div>
+    );
   return (
     <div>
       <PageHeader
@@ -92,7 +89,7 @@ export default function JobRolesPage() {
             </tr>
           </thead>
           <tbody>
-            {jobRoles.map((role) => (
+            {(jobRoles ?? []).map((role) => (
               <tr
                 key={role.id}
                 className="border-b border-gray-100 last:border-0 even:bg-gray-50"
@@ -108,7 +105,7 @@ export default function JobRolesPage() {
                 </td>
               </tr>
             ))}
-            {jobRoles.length === 0 && (
+            {(jobRoles ?? []).length === 0 && (
               <EmptyState colSpan={2} message="No job roles found" />
             )}
           </tbody>

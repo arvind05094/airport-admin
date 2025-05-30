@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import api from "../../lib/api";
+import { useFetch } from "../../hooks/useFetch";
 import EmptyState from "../../components/EmptyState";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import PageHeader from "../../components/PageHeader";
@@ -26,29 +27,18 @@ const emptyForm: CreateForm = {
 };
 
 export default function UsersPage() {
-  const [users, setUsers] = useState<AdminUser[]>([]);
-  const [jobRoles, setJobRoles] = useState<JobRole[]>([]);
-  const [constraintProfiles, setConstraintProfiles] = useState<
-    ConstraintProfile[]
-  >([]);
+  const {
+    data: users,
+    loading,
+    error,
+    refetch,
+  } = useFetch<AdminUser[]>("/api/admin/users");
+  const { data: jobRoles } = useFetch<JobRole[]>("/api/admin/job-roles");
+  const { data: constraintProfiles } = useFetch<ConstraintProfile[]>(
+    "/api/admin/constraint-profiles",
+  );
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<CreateForm>(emptyForm);
-  const [loading, setLoading] = useState(true);
-
-  const fetchUsers = () => {
-    api.get("/api/admin/users").then((res) => {
-      setUsers(res.data);
-      setLoading(false);
-    });
-  };
-
-  useEffect(() => {
-    fetchUsers();
-    api.get("/api/admin/job-roles").then((res) => setJobRoles(res.data));
-    api
-      .get("/api/admin/constraint-profiles")
-      .then((res) => setConstraintProfiles(res.data));
-  }, []);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,7 +47,7 @@ export default function UsersPage() {
       toast.success("User created");
       setShowForm(false);
       setForm(emptyForm);
-      fetchUsers();
+      refetch();
     } catch {
       toast.error("Failed to create user");
     }
@@ -68,14 +58,17 @@ export default function UsersPage() {
     try {
       await api.delete(`/api/admin/users/${id}`);
       toast.success("User deleted");
-      fetchUsers();
+      refetch();
     } catch {
       toast.error("Failed to delete user");
     }
   };
 
   if (loading) return <LoadingSpinner />;
-
+  if (error)
+    return (
+      <div className="text-center py-12 text-red-500 text-sm">{error}</div>
+    );
   return (
     <div>
       <PageHeader
@@ -147,7 +140,7 @@ export default function UsersPage() {
               className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
             >
               <option value="">None</option>
-              {jobRoles.map((r) => (
+              {(jobRoles ?? []).map((r) => (
                 <option key={r.id} value={r.id}>
                   {r.name}
                 </option>
@@ -169,7 +162,7 @@ export default function UsersPage() {
               className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
             >
               <option value="">None</option>
-              {constraintProfiles.map((p) => (
+              {(constraintProfiles ?? []).map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.name}
                 </option>
@@ -210,7 +203,7 @@ export default function UsersPage() {
             </tr>
           </thead>
           <tbody>
-            {users.map((user) => (
+            {(users ?? []).map((user) => (
               <tr
                 key={user.id}
                 className="border-b border-gray-100 last:border-0 even:bg-gray-50"
@@ -238,7 +231,7 @@ export default function UsersPage() {
                 </td>
               </tr>
             ))}
-            {users.length === 0 && (
+            {(users ?? []).length === 0 && (
               <EmptyState colSpan={6} message="No users found" />
             )}
           </tbody>

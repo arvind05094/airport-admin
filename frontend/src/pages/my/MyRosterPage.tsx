@@ -1,24 +1,21 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import api, { formatDate, formatTime, getErrorMessage } from "../../lib/api";
+import { useFetch } from "../../hooks/useFetch";
 import type { MyRosterAssignment } from "../../types/my";
 import EmptyState from "../../components/EmptyState";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import PageHeader from "../../components/PageHeader";
 
 export default function MyRosterPage() {
-  const [assignments, setAssignments] = useState<MyRosterAssignment[]>([]);
-  const [loading, setLoading] = useState(true);
+  const {
+    data: assignments,
+    loading,
+    error,
+  } = useFetch<MyRosterAssignment[]>("/api/my/roster");
   const [coveringId, setCoveringId] = useState<number | null>(null);
   const [reason, setReason] = useState("");
   const [submitting, setSubmitting] = useState(false);
-
-  useEffect(() => {
-    api.get("/api/my/roster").then((res) => {
-      setAssignments(res.data);
-      setLoading(false);
-    });
-  }, []);
 
   const handleRequestCover = async (assignmentId: number) => {
     setSubmitting(true);
@@ -38,7 +35,10 @@ export default function MyRosterPage() {
   };
 
   if (loading) return <LoadingSpinner />;
-
+  if (error)
+    return (
+      <div className="text-center py-12 text-red-500 text-sm">{error}</div>
+    );
   return (
     <div>
       <PageHeader
@@ -66,7 +66,7 @@ export default function MyRosterPage() {
             </tr>
           </thead>
           <tbody>
-            {assignments.map((a) => (
+            {(assignments ?? []).map((a) => (
               <>
                 <tr
                   key={a.id}
@@ -126,7 +126,7 @@ export default function MyRosterPage() {
                 )}
               </>
             ))}
-            {assignments.length === 0 && (
+            {(assignments ?? []).length === 0 && (
               <EmptyState colSpan={5} message="No shifts assigned yet" />
             )}
           </tbody>
