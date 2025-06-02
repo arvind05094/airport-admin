@@ -88,14 +88,14 @@ export default function MyRosterPage() {
                             setCoveringId(null);
                             setReason("");
                           }}
-                          className="text-xs text-gray-500 hover:text-black transition"
+                          className="text-xs text-gray-500 hover:text-black border border-gray-300 rounded px-2 py-1 transition"
                         >
                           Cancel
                         </button>
                       ) : (
                         <button
                           onClick={() => setCoveringId(a.id)}
-                          className="text-xs text-blue-500 hover:text-blue-700 transition"
+                          className="text-xs text-blue-500 hover:text-blue-700 border border-blue-300 rounded px-2 py-1 transition"
                         >
                           Request Cover
                         </button>

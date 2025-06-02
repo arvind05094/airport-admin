@@ -183,7 +183,7 @@ export default function ConstraintProfilesPage() {
                   <td className="px-4 py-3 text-right">
                     <button
                       onClick={() => handleDelete(profile.id)}
-                      className="text-xs text-red-500 hover:text-red-700 transition"
+                      className="text-xs text-red-500 hover:text-red-700 border border-red-300 rounded px-2 py-1 transition"
                     >
                       Delete
                     </button>

@@ -94,7 +94,7 @@ export default function StaffingRequestsPage() {
                     {req.status === "Pending" && (
                       <button
                         onClick={() => handleFulfil(req.id)}
-                        className="text-xs text-green-600 hover:text-green-800 transition"
+                        className="text-xs text-green-600 hover:text-green-800 border border-green-300 rounded px-2 py-1 transition"
                       >
                         Fulfil
                       </button>

@@ -113,13 +113,13 @@ export default function ShiftCoverPage() {
                               setApprovingId(req.id);
                               setCoveredById(0);
                             }}
-                            className="text-xs text-green-600 hover:text-green-800 transition"
+                            className="text-xs text-green-600 hover:text-green-800 border border-green-300 rounded px-2 py-1 transition"
                           >
                             Approve
                           </button>
                           <button
                             onClick={() => handleReject(req.id)}
-                            className="text-xs text-red-500 hover:text-red-700 transition"
+                            className="text-xs text-red-500 hover:text-red-700 border border-red-300 rounded px-2 py-1 transition"
                           >
                             Reject
                           </button>

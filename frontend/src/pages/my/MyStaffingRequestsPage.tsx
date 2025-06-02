@@ -284,7 +284,7 @@ export default function MyStaffingRequestsPage() {
                     {req.status === "Pending" && (
                       <button
                         onClick={() => handleCancel(req.id)}
-                        className="text-xs text-red-500 hover:text-red-700 transition"
+                        className="text-xs text-red-500 hover:text-red-700 border border-red-300 rounded px-2 py-1 transition"
                       >
                         Cancel
                       </button>

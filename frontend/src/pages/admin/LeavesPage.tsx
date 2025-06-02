@@ -78,13 +78,13 @@ export default function LeavesPage() {
                       <>
                         <button
                           onClick={() => handleAction(leave.id, "approve")}
-                          className="text-xs text-green-600 hover:text-green-800 transition"
+                          className="text-xs text-green-600 hover:text-green-800 border border-green-300 rounded px-2 py-1 transition"
                         >
                           Approve
                         </button>
                         <button
                           onClick={() => handleAction(leave.id, "reject")}
-                          className="text-xs text-red-500 hover:text-red-700 transition"
+                          className="text-xs text-red-500 hover:text-red-700 border border-red-300 rounded px-2 py-1 transition"
                         >
                           Reject
                         </button>
