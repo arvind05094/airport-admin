@@ -84,7 +84,7 @@ export default function RosterPage() {
         }}
       />
 
-      <div className="flex gap-3 items-end mb-6">
+      <div className="flex flex-wrap gap-3 items-end mb-6">
         <div>
           <label className="text-sm font-medium block mb-1">From</label>
           <input
@@ -116,7 +116,7 @@ export default function RosterPage() {
       {showForm && (
         <form
           onSubmit={handleGenerate}
-          className="border border-gray-200 rounded-lg p-6 mb-6 bg-white grid grid-cols-2 gap-4"
+          className="border border-gray-200 rounded-lg p-6 mb-6 bg-white grid grid-cols-1 md:grid-cols-2 gap-4"
         >
           <div>
             <label className="text-sm font-medium block mb-1">Start Date</label>
@@ -210,63 +210,67 @@ export default function RosterPage() {
       )}
 
       <div className="border border-gray-200 rounded-lg bg-white overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="border-b border-gray-200 bg-gray-50">
-            <tr>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">
-                Staff
-              </th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">
-                Location
-              </th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">
-                Job Role
-              </th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">
-                Date
-              </th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">
-                Time
-              </th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {(assignments ?? [])
-              .filter((a) => {
-                if (filterFrom && a.date < filterFrom) return false;
-                if (filterTo && a.date > filterTo) return false;
-                return true;
-              })
-              .map((a) => (
-                <tr
-                  key={a.id}
-                  className="border-b border-gray-100 last:border-0 even:bg-gray-50"
-                >
-                  <td className="px-4 py-3">{a.userFullName}</td>
-                  <td className="px-4 py-3 text-gray-500">{a.locationName}</td>
-                  <td className="px-4 py-3 text-gray-500">{a.jobRoleName}</td>
-                  <td className="px-4 py-3 text-gray-500">
-                    {formatDate(a.date)}
-                  </td>
-                  <td className="px-4 py-3 text-gray-500">
-                    {formatTime(a.startTime)} - {formatTime(a.endTime)}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <button
-                      onClick={() => handleDelete(a.id)}
-                      className="text-xs text-red-500 hover:text-red-700 transition"
-                    >
-                      Remove
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            {(assignments ?? []).length === 0 && (
-              <EmptyState colSpan={6} message="No assignments yet" />
-            )}
-          </tbody>
-        </table>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="border-b border-gray-200 bg-gray-50">
+              <tr>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">
+                  Staff
+                </th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">
+                  Location
+                </th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">
+                  Job Role
+                </th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">
+                  Date
+                </th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">
+                  Time
+                </th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {(assignments ?? [])
+                .filter((a) => {
+                  if (filterFrom && a.date < filterFrom) return false;
+                  if (filterTo && a.date > filterTo) return false;
+                  return true;
+                })
+                .map((a) => (
+                  <tr
+                    key={a.id}
+                    className="border-b border-gray-100 last:border-0 even:bg-gray-50"
+                  >
+                    <td className="px-4 py-3">{a.userFullName}</td>
+                    <td className="px-4 py-3 text-gray-500">
+                      {a.locationName}
+                    </td>
+                    <td className="px-4 py-3 text-gray-500">{a.jobRoleName}</td>
+                    <td className="px-4 py-3 text-gray-500">
+                      {formatDate(a.date)}
+                    </td>
+                    <td className="px-4 py-3 text-gray-500">
+                      {formatTime(a.startTime)} - {formatTime(a.endTime)}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <button
+                        onClick={() => handleDelete(a.id)}
+                        className="text-xs text-red-500 hover:text-red-700 transition"
+                      >
+                        Remove
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              {(assignments ?? []).length === 0 && (
+                <EmptyState colSpan={6} message="No assignments yet" />
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

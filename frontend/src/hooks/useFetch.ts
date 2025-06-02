@@ -10,13 +10,12 @@ interface UseFetchResult<T> {
 
 export function useFetch<T>(url: string): UseFetchResult<T> {
   const [data, setData] = useState<T | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!!url);
   const [error, setError] = useState<string | null>(null);
   const [tick, setTick] = useState(0);
 
   useEffect(() => {
-    setLoading(true);
-    setError(null);
+    if (!url) return;
     api
       .get<T>(url)
       .then((res) => {
@@ -29,7 +28,11 @@ export function useFetch<T>(url: string): UseFetchResult<T> {
       });
   }, [url, tick]);
 
-  const refetch = () => setTick((t) => t + 1);
+  const refetch = () => {
+    setLoading(true);
+    setError(null);
+    setTick((t) => t + 1);
+  };
 
   return { data, loading, error, refetch };
 }

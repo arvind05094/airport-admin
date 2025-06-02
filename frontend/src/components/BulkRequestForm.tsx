@@ -69,7 +69,8 @@ export default function BulkRequestForm({
       onSubmit={handleSubmit}
       className="border border-gray-200 rounded-lg p-6 mb-6 bg-white"
     >
-      <div className="overflow-x-auto">
+      {/* Desktop table */}
+      <div className="hidden md:block overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-gray-200">
@@ -99,10 +100,7 @@ export default function BulkRequestForm({
           </thead>
           <tbody>
             {rows.map((row, i) => (
-              <tr
-                key={i}
-                className="border-b border-gray-100 last:border-0 even:bg-gray-50"
-              >
+              <tr key={i} className="border-b border-gray-100 last:border-0">
                 <td className="py-2 pr-2">
                   <select
                     required
@@ -198,6 +196,133 @@ export default function BulkRequestForm({
         </table>
       </div>
 
+      {/* Mobile cards */}
+      <div className="md:hidden space-y-4">
+        {rows.map((row, i) => (
+          <div
+            key={i}
+            className="border border-gray-200 rounded-lg p-4 space-y-3"
+          >
+            <div className="flex justify-between items-center">
+              <span className="text-sm font-medium text-gray-600">
+                Row {i + 1}
+              </span>
+              {rows.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => removeRow(i)}
+                  className="text-red-500 hover:text-red-700 text-xs"
+                >
+                  Remove
+                </button>
+              )}
+            </div>
+            <div className="grid grid-cols-1 gap-3">
+              <div>
+                <label className="text-xs font-medium text-gray-600 block mb-1">
+                  Location
+                </label>
+                <select
+                  required
+                  value={row.locationId}
+                  onChange={(e) => update(i, "locationId", +e.target.value)}
+                  className={inputCls}
+                >
+                  <option value={0}>Select</option>
+                  {locations.map((l) => (
+                    <option key={l.id} value={l.id}>
+                      {l.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-gray-600 block mb-1">
+                  Job Role
+                </label>
+                <select
+                  required
+                  value={row.jobRoleId}
+                  onChange={(e) => update(i, "jobRoleId", +e.target.value)}
+                  className={inputCls}
+                >
+                  <option value={0}>Select</option>
+                  {jobRoles.map((r) => (
+                    <option key={r.id} value={r.id}>
+                      {r.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-medium text-gray-600 block mb-1">
+                    Start Date
+                  </label>
+                  <input
+                    required
+                    type="date"
+                    value={row.startDate}
+                    onChange={(e) => update(i, "startDate", e.target.value)}
+                    className={inputCls}
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-600 block mb-1">
+                    End Date
+                  </label>
+                  <input
+                    required
+                    type="date"
+                    value={row.endDate}
+                    onChange={(e) => update(i, "endDate", e.target.value)}
+                    className={inputCls}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-medium text-gray-600 block mb-1">
+                    Start Time
+                  </label>
+                  <input
+                    required
+                    type="time"
+                    value={row.startTime}
+                    onChange={(e) => update(i, "startTime", e.target.value)}
+                    className={inputCls}
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-600 block mb-1">
+                    End Time
+                  </label>
+                  <input
+                    required
+                    type="time"
+                    value={row.endTime}
+                    onChange={(e) => update(i, "endTime", e.target.value)}
+                    className={inputCls}
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-gray-600 block mb-1">
+                  Required Count
+                </label>
+                <input
+                  required
+                  type="number"
+                  min={1}
+                  value={row.requiredCount}
+                  onChange={(e) => update(i, "requiredCount", +e.target.value)}
+                  className={inputCls}
+                />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
       <div className="flex items-center gap-3 mt-4">
         <button
           type="button"

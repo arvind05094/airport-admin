@@ -83,7 +83,7 @@ export default function UsersPage() {
       {showForm && (
         <form
           onSubmit={handleCreate}
-          className="border border-gray-200 rounded-lg p-6 mb-6 bg-white grid grid-cols-2 gap-4"
+          className="border border-gray-200 rounded-lg p-6 mb-6 bg-white grid grid-cols-1 md:grid-cols-2 gap-4"
         >
           <div>
             <label className="text-sm font-medium block mb-1">Full Name</label>
@@ -181,61 +181,63 @@ export default function UsersPage() {
       )}
 
       <div className="border border-gray-200 rounded-lg bg-white overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="border-b border-gray-200 bg-gray-50">
-            <tr>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">
-                Name
-              </th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">
-                Email
-              </th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">
-                Role
-              </th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">
-                Job Role
-              </th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">
-                Constraint Profile
-              </th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {(users ?? []).map((user) => (
-              <tr
-                key={user.id}
-                className="border-b border-gray-100 last:border-0 even:bg-gray-50"
-              >
-                <td className="px-4 py-3">{user.fullName}</td>
-                <td className="px-4 py-3 text-gray-500">{user.email}</td>
-                <td className="px-4 py-3">
-                  <span className="inline-block border border-gray-300 rounded px-2 py-0.5 text-xs">
-                    {user.role}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-gray-500">
-                  {user.jobRoleName ?? "—"}
-                </td>
-                <td className="px-4 py-3 text-gray-500">
-                  {user.constraintProfileName ?? "—"}
-                </td>
-                <td className="px-4 py-3 text-right">
-                  <button
-                    onClick={() => handleDelete(user.id)}
-                    className="text-xs text-red-500 hover:text-red-700 transition"
-                  >
-                    Delete
-                  </button>
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="border-b border-gray-200 bg-gray-50">
+              <tr>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">
+                  Name
+                </th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">
+                  Email
+                </th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">
+                  Role
+                </th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">
+                  Job Role
+                </th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">
+                  Constraint Profile
+                </th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600"></th>
               </tr>
-            ))}
-            {(users ?? []).length === 0 && (
-              <EmptyState colSpan={6} message="No users found" />
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {(users ?? []).map((user) => (
+                <tr
+                  key={user.id}
+                  className="border-b border-gray-100 last:border-0 even:bg-gray-50"
+                >
+                  <td className="px-4 py-3">{user.fullName}</td>
+                  <td className="px-4 py-3 text-gray-500">{user.email}</td>
+                  <td className="px-4 py-3">
+                    <span className="inline-block border border-gray-300 rounded px-2 py-0.5 text-xs">
+                      {user.role}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-gray-500">
+                    {user.jobRoleName ?? "—"}
+                  </td>
+                  <td className="px-4 py-3 text-gray-500">
+                    {user.constraintProfileName ?? "—"}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <button
+                      onClick={() => handleDelete(user.id)}
+                      className="text-xs text-red-500 hover:text-red-700 transition"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+              {(users ?? []).length === 0 && (
+                <EmptyState colSpan={6} message="No users found" />
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

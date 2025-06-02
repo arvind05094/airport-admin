@@ -71,7 +71,7 @@ export default function MyLeavesPage() {
       {showForm && (
         <form
           onSubmit={handleApply}
-          className="border border-gray-200 rounded-lg p-6 mb-6 bg-white grid grid-cols-2 gap-4"
+          className="border border-gray-200 rounded-lg p-6 mb-6 bg-white grid grid-cols-1 md:grid-cols-2 gap-4"
         >
           <div>
             <label className="text-sm font-medium block mb-1">Start Date</label>
@@ -115,53 +115,55 @@ export default function MyLeavesPage() {
       )}
 
       <div className="border border-gray-200 rounded-lg bg-white overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="border-b border-gray-200 bg-gray-50">
-            <tr>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">
-                Start Date
-              </th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">
-                End Date
-              </th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">
-                Reason
-              </th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">
-                Status
-              </th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {(leaves ?? []).map((leave) => (
-              <tr
-                key={leave.id}
-                className="border-b border-gray-100 last:border-0 even:bg-gray-50"
-              >
-                <td className="px-4 py-3">{leave.startDate}</td>
-                <td className="px-4 py-3">{leave.endDate}</td>
-                <td className="px-4 py-3 text-gray-500">{leave.reason}</td>
-                <td className="px-4 py-3">
-                  <StatusBadge status={leave.status} />
-                </td>
-                <td className="px-4 py-3 text-right">
-                  {leave.status === "Pending" && (
-                    <button
-                      onClick={() => handleCancel(leave.id)}
-                      className="text-xs text-red-500 hover:text-red-700 transition"
-                    >
-                      Cancel
-                    </button>
-                  )}
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="border-b border-gray-200 bg-gray-50">
+              <tr>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">
+                  Start Date
+                </th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">
+                  End Date
+                </th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">
+                  Reason
+                </th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">
+                  Status
+                </th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600"></th>
               </tr>
-            ))}
-            {(leaves ?? []).length === 0 && (
-              <EmptyState colSpan={5} message="No leave requests found" />
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {(leaves ?? []).map((leave) => (
+                <tr
+                  key={leave.id}
+                  className="border-b border-gray-100 last:border-0 even:bg-gray-50"
+                >
+                  <td className="px-4 py-3">{leave.startDate}</td>
+                  <td className="px-4 py-3">{leave.endDate}</td>
+                  <td className="px-4 py-3 text-gray-500">{leave.reason}</td>
+                  <td className="px-4 py-3">
+                    <StatusBadge status={leave.status} />
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    {leave.status === "Pending" && (
+                      <button
+                        onClick={() => handleCancel(leave.id)}
+                        className="text-xs text-red-500 hover:text-red-700 transition"
+                      >
+                        Cancel
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+              {(leaves ?? []).length === 0 && (
+                <EmptyState colSpan={5} message="No leave requests found" />
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

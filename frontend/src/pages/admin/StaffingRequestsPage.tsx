@@ -38,73 +38,79 @@ export default function StaffingRequestsPage() {
       />
 
       <div className="border border-gray-200 rounded-lg bg-white overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="border-b border-gray-200 bg-gray-50">
-            <tr>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">
-                Created By
-              </th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">
-                Location
-              </th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">
-                Job Role
-              </th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">
-                Date
-              </th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">
-                Time
-              </th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">
-                Required
-              </th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">
-                Status
-              </th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600"></th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">
-                Created At
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {(requests ?? []).map((req) => (
-              <tr
-                key={req.id}
-                className="border-b border-gray-100 last:border-0 even:bg-gray-50"
-              >
-                <td className="px-4 py-3">{req.createdByFullName}</td>
-                <td className="px-4 py-3 text-gray-500">{req.locationName}</td>
-                <td className="px-4 py-3 text-gray-500">{req.jobRoleName}</td>
-                <td className="px-4 py-3 text-gray-500">{req.date}</td>
-                <td className="px-4 py-3 text-gray-500">
-                  {req.startTime} - {req.endTime}
-                </td>
-                <td className="px-4 py-3 text-gray-500">{req.requiredCount}</td>
-                <td className="px-4 py-3">
-                  <StatusBadge status={req.status} />
-                </td>
-                <td className="px-4 py-3 text-right">
-                  {req.status === "Pending" && (
-                    <button
-                      onClick={() => handleFulfil(req.id)}
-                      className="text-xs text-green-600 hover:text-green-800 transition"
-                    >
-                      Fulfil
-                    </button>
-                  )}
-                </td>
-                <td className="px-4 py-3 text-gray-500">
-                  {formatDate(req.createdAt)}
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="border-b border-gray-200 bg-gray-50">
+              <tr>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">
+                  Created By
+                </th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">
+                  Location
+                </th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">
+                  Job Role
+                </th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">
+                  Date
+                </th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">
+                  Time
+                </th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">
+                  Required
+                </th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">
+                  Status
+                </th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600"></th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">
+                  Created At
+                </th>
               </tr>
-            ))}
-            {(requests ?? []).length === 0 && (
-              <EmptyState colSpan={9} message="No staffing requests found" />
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {(requests ?? []).map((req) => (
+                <tr
+                  key={req.id}
+                  className="border-b border-gray-100 last:border-0 even:bg-gray-50"
+                >
+                  <td className="px-4 py-3">{req.createdByFullName}</td>
+                  <td className="px-4 py-3 text-gray-500">
+                    {req.locationName}
+                  </td>
+                  <td className="px-4 py-3 text-gray-500">{req.jobRoleName}</td>
+                  <td className="px-4 py-3 text-gray-500">{req.date}</td>
+                  <td className="px-4 py-3 text-gray-500">
+                    {req.startTime} - {req.endTime}
+                  </td>
+                  <td className="px-4 py-3 text-gray-500">
+                    {req.requiredCount}
+                  </td>
+                  <td className="px-4 py-3">
+                    <StatusBadge status={req.status} />
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    {req.status === "Pending" && (
+                      <button
+                        onClick={() => handleFulfil(req.id)}
+                        className="text-xs text-green-600 hover:text-green-800 transition"
+                      >
+                        Fulfil
+                      </button>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-gray-500">
+                    {formatDate(req.createdAt)}
+                  </td>
+                </tr>
+              ))}
+              {(requests ?? []).length === 0 && (
+                <EmptyState colSpan={9} message="No staffing requests found" />
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

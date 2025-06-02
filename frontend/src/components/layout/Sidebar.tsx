@@ -1,4 +1,5 @@
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 
 const adminLinks = [
@@ -34,6 +35,8 @@ const managerLinks = [
 
 export default function Sidebar() {
   const { user, logout } = useAuth();
+  const location = useLocation();
+  const [open, setOpen] = useState(false);
 
   const links =
     user?.role === "Admin"
@@ -42,13 +45,16 @@ export default function Sidebar() {
         ? managerLinks
         : staffLinks;
 
-  return (
-    <aside className="w-56 min-h-screen border-r border-gray-200 flex flex-col bg-white">
+  const navContent = (
+    <>
       <div className="px-6 py-5 border-b border-gray-200">
         <h1 className="font-semibold text-sm tracking-wide uppercase">
           Airport Admin
         </h1>
-        <p className="text-xs text-gray-500 mt-0.5">{user?.role}</p>
+        <p className="text-xs font-medium text-gray-700 mt-0.5">
+          {user?.email}
+        </p>
+        <p className="text-xs text-gray-500">{user?.role}</p>
       </div>
 
       <nav className="flex-1 px-3 py-4 space-y-0.5">
@@ -56,7 +62,12 @@ export default function Sidebar() {
           <Link
             key={link.href}
             to={link.href}
-            className={`block px-3 py-2 rounded-md text-sm transition-colors`}
+            onClick={() => setOpen(false)}
+            className={`block px-3 py-2 rounded-md text-sm transition-colors ${
+              location.pathname === link.href
+                ? "bg-gray-100 font-medium"
+                : "hover:bg-gray-50"
+            }`}
           >
             {link.label}
           </Link>
@@ -71,6 +82,42 @@ export default function Sidebar() {
           Sign out
         </button>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Mobile hamburger button */}
+      <button
+        onClick={() => setOpen(true)}
+        className="md:hidden fixed top-4 left-4 z-50 bg-white border border-gray-200 rounded-md p-2 shadow-sm"
+      >
+        <div className="w-4 h-0.5 bg-gray-600 mb-1" />
+        <div className="w-4 h-0.5 bg-gray-600 mb-1" />
+        <div className="w-4 h-0.5 bg-gray-600" />
+      </button>
+
+      {/* Mobile overlay */}
+      {open && (
+        <div
+          className="md:hidden fixed inset-0 bg-black/40 z-40"
+          onClick={() => setOpen(false)}
+        />
+      )}
+
+      {/* Mobile drawer */}
+      <aside
+        className={`md:hidden fixed top-0 left-0 h-full w-56 bg-white z-50 flex flex-col border-r border-gray-200 transform transition-transform duration-200 ${
+          open ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        {navContent}
+      </aside>
+
+      {/* Desktop sidebar */}
+      <aside className="hidden md:flex w-56 min-h-screen border-r border-gray-200 flex-col bg-white">
+        {navContent}
+      </aside>
+    </>
   );
 }

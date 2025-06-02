@@ -1,20 +1,20 @@
-import { useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useAuth } from './useAuth'
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "./useAuth";
 
 export function useRequireRole(roles: string[]) {
-  const { user } = useAuth()
-  const navigate = useNavigate()
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!user) {
-      navigate('/login')
-      return
+      navigate("/login");
+      return;
     }
     if (!roles.includes(user.role)) {
-      navigate('/unauthorized')
+      navigate("/unauthorized");
     }
-  }, [user])
+  }, [user, navigate, roles]);
 
-  return user
+  return user;
 }

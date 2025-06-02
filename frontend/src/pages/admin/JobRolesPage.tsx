@@ -79,37 +79,39 @@ export default function JobRolesPage() {
       )}
 
       <div className="border border-gray-200 rounded-lg bg-white overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="border-b border-gray-200 bg-gray-50">
-            <tr>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">
-                Name
-              </th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {(jobRoles ?? []).map((role) => (
-              <tr
-                key={role.id}
-                className="border-b border-gray-100 last:border-0 even:bg-gray-50"
-              >
-                <td className="px-4 py-3">{role.name}</td>
-                <td className="px-4 py-3 text-right">
-                  <button
-                    onClick={() => handleDelete(role.id)}
-                    className="text-xs text-red-500 hover:text-red-700 transition"
-                  >
-                    Delete
-                  </button>
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="border-b border-gray-200 bg-gray-50">
+              <tr>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">
+                  Name
+                </th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600"></th>
               </tr>
-            ))}
-            {(jobRoles ?? []).length === 0 && (
-              <EmptyState colSpan={2} message="No job roles found" />
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {(jobRoles ?? []).map((role) => (
+                <tr
+                  key={role.id}
+                  className="border-b border-gray-100 last:border-0 even:bg-gray-50"
+                >
+                  <td className="px-4 py-3">{role.name}</td>
+                  <td className="px-4 py-3 text-right">
+                    <button
+                      onClick={() => handleDelete(role.id)}
+                      className="text-xs text-red-500 hover:text-red-700 transition"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+              {(jobRoles ?? []).length === 0 && (
+                <EmptyState colSpan={2} message="No job roles found" />
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

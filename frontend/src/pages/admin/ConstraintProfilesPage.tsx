@@ -74,7 +74,7 @@ export default function ConstraintProfilesPage() {
       {showForm && (
         <form
           onSubmit={handleCreate}
-          className="border border-gray-200 rounded-lg p-6 mb-6 bg-white grid grid-cols-2 gap-4"
+          className="border border-gray-200 rounded-lg p-6 mb-6 bg-white grid grid-cols-1 md:grid-cols-2 gap-4"
         >
           <div>
             <label className="text-sm font-medium block mb-1">Name</label>
@@ -145,55 +145,60 @@ export default function ConstraintProfilesPage() {
       )}
 
       <div className="border border-gray-200 rounded-lg bg-white overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="border-b border-gray-200 bg-gray-50">
-            <tr>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">
-                Name
-              </th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">
-                Max Hrs/Day
-              </th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">
-                Max Hrs/Week
-              </th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">
-                Max Consecutive Days
-              </th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {(profiles ?? []).map((profile) => (
-              <tr
-                key={profile.id}
-                className="border-b border-gray-100 last:border-0 even:bg-gray-50"
-              >
-                <td className="px-4 py-3">{profile.name}</td>
-                <td className="px-4 py-3 text-gray-500">
-                  {profile.maxHoursPerDay}
-                </td>
-                <td className="px-4 py-3 text-gray-500">
-                  {profile.maxHoursPerWeek}
-                </td>
-                <td className="px-4 py-3 text-gray-500">
-                  {profile.maxConsecutiveDays}
-                </td>
-                <td className="px-4 py-3 text-right">
-                  <button
-                    onClick={() => handleDelete(profile.id)}
-                    className="text-xs text-red-500 hover:text-red-700 transition"
-                  >
-                    Delete
-                  </button>
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="border-b border-gray-200 bg-gray-50">
+              <tr>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">
+                  Name
+                </th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">
+                  Max Hrs/Day
+                </th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">
+                  Max Hrs/Week
+                </th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">
+                  Max Consecutive Days
+                </th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600"></th>
               </tr>
-            ))}
-            {(profiles ?? []).length === 0 && (
-              <EmptyState colSpan={5} message="No constraint profiles found" />
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {(profiles ?? []).map((profile) => (
+                <tr
+                  key={profile.id}
+                  className="border-b border-gray-100 last:border-0 even:bg-gray-50"
+                >
+                  <td className="px-4 py-3">{profile.name}</td>
+                  <td className="px-4 py-3 text-gray-500">
+                    {profile.maxHoursPerDay}
+                  </td>
+                  <td className="px-4 py-3 text-gray-500">
+                    {profile.maxHoursPerWeek}
+                  </td>
+                  <td className="px-4 py-3 text-gray-500">
+                    {profile.maxConsecutiveDays}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <button
+                      onClick={() => handleDelete(profile.id)}
+                      className="text-xs text-red-500 hover:text-red-700 transition"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+              {(profiles ?? []).length === 0 && (
+                <EmptyState
+                  colSpan={5}
+                  message="No constraint profiles found"
+                />
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

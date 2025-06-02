@@ -58,118 +58,123 @@ export default function ShiftCoverPage() {
       />
 
       <div className="border border-gray-200 rounded-lg bg-white overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="border-b border-gray-200 bg-gray-50">
-            <tr>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">
-                Staff
-              </th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">
-                Shift Date
-              </th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">
-                Time
-              </th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">
-                Reason
-              </th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">
-                Covered By
-              </th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">
-                Status
-              </th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {(requests ?? []).map((req) => (
-              <>
-                <tr
-                  key={req.id}
-                  className="border-b border-gray-100 last:border-0 even:bg-gray-50"
-                >
-                  <td className="px-4 py-3">{req.requesterFullName}</td>
-                  <td className="px-4 py-3 text-gray-500">
-                    {formatDate(req.shiftDate)}
-                  </td>
-                  <td className="px-4 py-3 text-gray-500">
-                    {formatTime(req.shiftStartTime)} -{" "}
-                    {formatTime(req.shiftEndTime)}
-                  </td>
-                  <td className="px-4 py-3 text-gray-500">{req.reason}</td>
-                  <td className="px-4 py-3 text-gray-500">
-                    {req.coveredByFullName ?? "—"}
-                  </td>
-                  <td className="px-4 py-3">
-                    <StatusBadge status={req.status} />
-                  </td>
-                  <td className="px-4 py-3 text-right space-x-2">
-                    {req.status === "Pending" && (
-                      <>
-                        <button
-                          onClick={() => {
-                            setApprovingId(req.id);
-                            setCoveredById(0);
-                          }}
-                          className="text-xs text-green-600 hover:text-green-800 transition"
-                        >
-                          Approve
-                        </button>
-                        <button
-                          onClick={() => handleReject(req.id)}
-                          className="text-xs text-red-500 hover:text-red-700 transition"
-                        >
-                          Reject
-                        </button>
-                      </>
-                    )}
-                  </td>
-                </tr>
-                {approvingId === req.id && (
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="border-b border-gray-200 bg-gray-50">
+              <tr>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">
+                  Staff
+                </th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">
+                  Shift Date
+                </th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">
+                  Time
+                </th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">
+                  Reason
+                </th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">
+                  Covered By
+                </th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">
+                  Status
+                </th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {(requests ?? []).map((req) => (
+                <>
                   <tr
-                    key={`approve-${req.id}`}
-                    className="bg-green-50 border-b border-gray-100"
+                    key={req.id}
+                    className="border-b border-gray-100 last:border-0 even:bg-gray-50"
                   >
-                    <td colSpan={7} className="px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        <select
-                          value={coveredById}
-                          onChange={(e) => setCoveredById(+e.target.value)}
-                          className="flex-1 border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-black"
-                        >
-                          <option value={0}>Select covering staff...</option>
-                          {(users ?? [])
-                            .filter((u) => u.id !== req.requesterId)
-                            .map((u) => (
-                              <option key={u.id} value={u.id}>
-                                {u.fullName}
-                              </option>
-                            ))}
-                        </select>
-                        <button
-                          onClick={() => handleApprove(req.id)}
-                          className="bg-black text-white text-sm px-4 py-1.5 rounded-md hover:bg-gray-800 transition"
-                        >
-                          Confirm
-                        </button>
-                        <button
-                          onClick={() => setApprovingId(null)}
-                          className="text-sm text-gray-500 hover:text-black transition"
-                        >
-                          Cancel
-                        </button>
-                      </div>
+                    <td className="px-4 py-3">{req.requesterFullName}</td>
+                    <td className="px-4 py-3 text-gray-500">
+                      {formatDate(req.shiftDate)}
+                    </td>
+                    <td className="px-4 py-3 text-gray-500">
+                      {formatTime(req.shiftStartTime)} -{" "}
+                      {formatTime(req.shiftEndTime)}
+                    </td>
+                    <td className="px-4 py-3 text-gray-500">{req.reason}</td>
+                    <td className="px-4 py-3 text-gray-500">
+                      {req.coveredByFullName ?? "—"}
+                    </td>
+                    <td className="px-4 py-3">
+                      <StatusBadge status={req.status} />
+                    </td>
+                    <td className="px-4 py-3 text-right space-x-2">
+                      {req.status === "Pending" && (
+                        <>
+                          <button
+                            onClick={() => {
+                              setApprovingId(req.id);
+                              setCoveredById(0);
+                            }}
+                            className="text-xs text-green-600 hover:text-green-800 transition"
+                          >
+                            Approve
+                          </button>
+                          <button
+                            onClick={() => handleReject(req.id)}
+                            className="text-xs text-red-500 hover:text-red-700 transition"
+                          >
+                            Reject
+                          </button>
+                        </>
+                      )}
                     </td>
                   </tr>
-                )}
-              </>
-            ))}
-            {(requests ?? []).length === 0 && (
-              <EmptyState colSpan={7} message="No shift cover requests found" />
-            )}
-          </tbody>
-        </table>
+                  {approvingId === req.id && (
+                    <tr
+                      key={`approve-${req.id}`}
+                      className="bg-green-50 border-b border-gray-100"
+                    >
+                      <td colSpan={7} className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          <select
+                            value={coveredById}
+                            onChange={(e) => setCoveredById(+e.target.value)}
+                            className="flex-1 border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+                          >
+                            <option value={0}>Select covering staff...</option>
+                            {(users ?? [])
+                              .filter((u) => u.id !== req.requesterId)
+                              .map((u) => (
+                                <option key={u.id} value={u.id}>
+                                  {u.fullName}
+                                </option>
+                              ))}
+                          </select>
+                          <button
+                            onClick={() => handleApprove(req.id)}
+                            className="bg-black text-white text-sm px-4 py-1.5 rounded-md hover:bg-gray-800 transition"
+                          >
+                            Confirm
+                          </button>
+                          <button
+                            onClick={() => setApprovingId(null)}
+                            className="text-sm text-gray-500 hover:text-black transition"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </>
+              ))}
+              {(requests ?? []).length === 0 && (
+                <EmptyState
+                  colSpan={7}
+                  message="No shift cover requests found"
+                />
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
