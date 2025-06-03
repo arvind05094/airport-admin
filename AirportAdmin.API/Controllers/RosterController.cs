@@ -29,4 +29,12 @@ public class RosterController(RosterService rosterService) : ControllerBase
         if (error != null) return NotFound(new { message = error });
         return NoContent();
     }
+
+    [HttpPost("api/admin/roster/generate/{staffingRequestId}")]
+    public async Task<IActionResult> GenerateForRequest(int staffingRequestId)
+    {
+        var (result, error) = await rosterService.GenerateForRequestAsync(staffingRequestId);
+        if (error != null) return BadRequest(new { message = error });
+        return Ok(result);
+    }
 }

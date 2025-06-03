@@ -1,6 +1,7 @@
 using AirportAdmin.API.Data;
 using AirportAdmin.API.DTOs;
 using AirportAdmin.API.Entities;
+using AirportAdmin.API.Helpers;
 using Microsoft.EntityFrameworkCore;
 
 namespace AirportAdmin.API.Services;
@@ -73,8 +74,33 @@ public class ShiftCoverService(AppDbContext db)
         if (shift == null) return (null, "Shift cover request not found.");
         if (shift.Status != "Pending") return (null, "Only pending requests can be approved.");
 
-        var coveringUser = await db.Users.FindAsync(coveredById);
+        var coveringUser = await db.Users
+            .Include(u => u.ConstraintProfile)
+            .FirstOrDefaultAsync(u => u.Id == coveredById);
         if (coveringUser == null) return (null, "Covering user not found.");
+
+        var approvedLeaves = await db.LeaveRequests
+            .Where(l => l.Status == "Approved")
+            .ToListAsync();
+
+        var unavailableDates = await db.StaffAvailabilities
+            .Where(a => !a.IsAvailable)
+            .ToListAsync();
+
+        var existingAssignments = await db.ShiftAssignments
+            .Where(a => a.UserId == coveredById)
+            .ToListAsync();
+
+        if (RosterHelper.IsOnLeave(coveredById, shift.ShiftDate, approvedLeaves))
+            return (null, "Covering user is on approved leave on this date.");
+
+        if (RosterHelper.IsUnavailable(coveredById, shift.ShiftDate, unavailableDates))
+            return (null, "Covering user is marked unavailable on this date.");
+
+        var shiftHours = (shift.ShiftEndTime - shift.ShiftStartTime).TotalHours;
+
+        if (!RosterHelper.PassesConstraints(coveringUser, shift.ShiftDate, shiftHours, existingAssignments, []))
+            return (null, "Covering user would exceed their constraint profile limits.");
 
         shift.Status = "Approved";
         shift.CoveredById = coveredById;

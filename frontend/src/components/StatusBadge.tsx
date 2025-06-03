@@ -4,6 +4,7 @@ const statusStyles: Record<string, string> = {
   Rejected: "bg-red-100 text-red-700",
   Cancelled: "bg-red-100 text-red-700",
   Pending: "bg-yellow-100 text-yellow-700",
+  "Partially Filled": "bg-orange-100 text-orange-700",
 };
 
 const defaultStyle = "bg-gray-100 text-gray-600";

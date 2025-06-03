@@ -11,6 +11,8 @@ public class JwtHelper(IConfiguration config)
     public static int GetUserId(HttpContext context) =>
         int.Parse(context.User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
+    public static string GetRole(HttpContext context) =>
+    context.User.FindFirstValue(ClaimTypes.Role)!;
     public string GenerateToken(User user)
     {
         var secret = Environment.GetEnvironmentVariable("JWT_SECRET")

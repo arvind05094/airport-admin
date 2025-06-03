@@ -6,8 +6,10 @@ import EmptyState from "../../components/EmptyState";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import PageHeader from "../../components/PageHeader";
 import StatusBadge from "../../components/StatusBadge";
+import { useNavigate } from "react-router-dom";
 
 export default function StaffingRequestsPage() {
+  const navigate = useNavigate();
   const {
     data: requests,
     loading,
@@ -73,7 +75,8 @@ export default function StaffingRequestsPage() {
               {(requests ?? []).map((req) => (
                 <tr
                   key={req.id}
-                  className="border-b border-gray-100 last:border-0 even:bg-gray-50"
+                  onClick={() => navigate(`/staffing-requests/${req.id}`)}
+                  className="border-b border-gray-100 last:border-0 even:bg-gray-50 cursor-pointer hover:bg-gray-50"
                 >
                   <td className="px-4 py-3">{req.createdByFullName}</td>
                   <td className="px-4 py-3 text-gray-500">

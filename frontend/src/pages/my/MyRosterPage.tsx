@@ -1,3 +1,4 @@
+import React from "react";
 import { useState } from "react";
 import { toast } from "sonner";
 import api, { formatDate, formatTime, getErrorMessage } from "../../lib/api";
@@ -20,7 +21,7 @@ export default function MyRosterPage() {
   const handleRequestCover = async (assignmentId: number) => {
     setSubmitting(true);
     try {
-      await api.post("/api/my/shift-cover", {
+      await api.post("/api/my/shift-cover/apply", {
         shiftAssignmentId: assignmentId,
         reason,
       });
@@ -68,7 +69,7 @@ export default function MyRosterPage() {
             </thead>
             <tbody>
               {(assignments ?? []).map((a) => (
-                <>
+                <React.Fragment key={a.id}>
                   <tr
                     key={a.id}
                     className="border-b border-gray-100 last:border-0 even:bg-gray-50"
@@ -127,7 +128,7 @@ export default function MyRosterPage() {
                       </td>
                     </tr>
                   )}
-                </>
+                </React.Fragment>
               ))}
               {(assignments ?? []).length === 0 && (
                 <EmptyState colSpan={5} message="No shifts assigned yet" />

@@ -2,6 +2,15 @@ using System.ComponentModel.DataAnnotations;
 
 namespace AirportAdmin.API.DTOs;
 
+public class GenerateForRequestResult
+{
+    public int StaffingRequestId { get; set; }
+    public int RequiredCount { get; set; }
+    public int AssignedCount { get; set; }
+    public int UnfilledCount { get; set; }
+    public string Status { get; set; } = string.Empty;
+    public List<ShiftAssignmentResponse> Assignments { get; set; } = [];
+}
 public class GenerateRosterRequest
 {
     [Required] public DateOnly StartDate { get; set; }
@@ -9,7 +18,6 @@ public class GenerateRosterRequest
     public int? LocationId { get; set; }
     public int? JobRoleId { get; set; }
 }
-
 public class ShiftAssignmentResponse
 {
     public int Id { get; set; }

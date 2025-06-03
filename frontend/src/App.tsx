@@ -13,10 +13,10 @@ import MyStaffingRequestsPage from "./pages/my/MyStaffingRequestsPage";
 import ConstraintProfilesPage from "./pages/admin/ConstraintProfilesPage";
 import JobRolesPage from "./pages/admin/JobRolesPage";
 import LocationsPage from "./pages/admin/LocationsPage";
-import RosterPage from "./pages/admin/RosterPage";
 import AvailabilityPage from "./pages/admin/AvailabilityPage";
 import MyAvailabilityPage from "./pages/my/MyAvailabilityPage";
 import MyRosterPage from "./pages/my/MyRosterPage";
+import StaffingRequestDetailPage from "./pages/StaffingRequestDetailPage";
 
 function ProtectedRoute({ allowedRoles }: { allowedRoles?: string[] }) {
   const { user } = useAuth();
@@ -78,10 +78,13 @@ export default function App() {
           path="/admin/constraint-profiles"
           element={<ConstraintProfilesPage />}
         />
-        <Route path="/admin/roster" element={<RosterPage />} />
         <Route path="/my/roster" element={<MyRosterPage />} />
         <Route path="/my/availability" element={<MyAvailabilityPage />} />
         <Route path="/admin/availability" element={<AvailabilityPage />} />
+        <Route
+          path="/staffing-requests/:id"
+          element={<StaffingRequestDetailPage />}
+        />
       </Route>
 
       {/* Fallback for 404s */}

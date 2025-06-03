@@ -1,6 +1,7 @@
 using AirportAdmin.API.Data;
 using AirportAdmin.API.DTOs;
 using AirportAdmin.API.Entities;
+using AirportAdmin.API.Helpers;
 using Microsoft.EntityFrameworkCore;
 
 namespace AirportAdmin.API.Services;
@@ -63,12 +64,11 @@ public class RosterService(AppDbContext db)
             foreach (var user in eligibleUsers)
             {
                 if (assigned >= sr.RequiredCount) break;
+                if (RosterHelper.IsOnLeave(user.Id, sr.Date, approvedLeaves)) continue;
+                if (RosterHelper.IsUnavailable(user.Id, sr.Date, unavailableDates)) continue;
+                if (!RosterHelper.PassesConstraints(user, sr.Date, shiftHours, existingAssignments, newAssignments)) continue;
 
-                if (IsOnLeave(user.Id, sr.Date, approvedLeaves)) continue;
-                if (IsUnavailable(user.Id, sr.Date, unavailableDates)) continue;
-                if (!PassesConstraints(user, sr.Date, shiftHours, existingAssignments, newAssignments)) continue;
-
-                var assignment = new ShiftAssignment
+                newAssignments.Add(new ShiftAssignment
                 {
                     UserId = user.Id,
                     StaffingRequestId = sr.Id,
@@ -77,16 +77,18 @@ public class RosterService(AppDbContext db)
                     EndTime = sr.EndTime,
                     LocationId = sr.LocationId,
                     JobRoleId = sr.JobRoleId
-                };
-
-                newAssignments.Add(assignment);
+                });
                 assigned++;
             }
 
             if (assigned < sr.RequiredCount)
                 unfilledCount++;
 
-            if (assigned > 0)
+            if (assigned == 0)
+                sr.Status = "Pending";
+            else if (assigned < sr.RequiredCount)
+                sr.Status = "Partially Filled";
+            else
                 sr.Status = "Fulfilled";
         }
 
@@ -100,34 +102,38 @@ public class RosterService(AppDbContext db)
             .Include(a => a.JobRole)
             .LoadAsync();
 
-        var responses = newAssignments.Select(a => ToResponse(a)).ToList();
-
         return (new RosterGenerationResult
         {
             TotalAssignments = newAssignments.Count,
             UnfilledRequests = unfilledCount,
-            Assignments = responses
+            Assignments = newAssignments.Select(ToResponse).ToList()
         }, null);
     }
 
-    public async Task<List<ShiftAssignmentResponse>> GetAllAsync() =>
-        await db.ShiftAssignments
+    public async Task<List<ShiftAssignmentResponse>> GetAllAsync()
+    {
+        var assignments = await db.ShiftAssignments
             .Include(a => a.User)
             .Include(a => a.Location)
             .Include(a => a.JobRole)
             .OrderByDescending(a => a.Date)
-            .Select(a => ToResponse(a))
             .ToListAsync();
 
-    public async Task<List<ShiftAssignmentResponse>> GetMyAssignmentsAsync(int userId) =>
-        await db.ShiftAssignments
+        return assignments.Select(ToResponse).ToList();
+    }
+
+    public async Task<List<ShiftAssignmentResponse>> GetMyAssignmentsAsync(int userId)
+    {
+        var assignments = await db.ShiftAssignments
             .Include(a => a.User)
             .Include(a => a.Location)
             .Include(a => a.JobRole)
             .Where(a => a.UserId == userId)
             .OrderBy(a => a.Date)
-            .Select(a => ToResponse(a))
             .ToListAsync();
+
+        return assignments.Select(ToResponse).ToList();
+    }
 
     public async Task<(bool success, string? error)> DeleteAsync(int id)
     {
@@ -145,52 +151,98 @@ public class RosterService(AppDbContext db)
         return (true, null);
     }
 
-    private static bool IsOnLeave(int userId, DateOnly date, List<LeaveRequest> leaves) =>
-        leaves.Any(l => l.UserId == userId && l.StartDate <= date && l.EndDate >= date);
-
-    private static bool IsUnavailable(int userId, DateOnly date, List<StaffAvailability> unavailable) =>
-        unavailable.Any(a => a.UserId == userId && a.Date == date);
-
-    private static bool PassesConstraints(
-        User user,
-        DateOnly date,
-        double shiftHours,
-        List<ShiftAssignment> existing,
-        List<ShiftAssignment> pending)
+    public async Task<(GenerateForRequestResult? result, string? error)> GenerateForRequestAsync(int staffingRequestId)
     {
-        var profile = user.ConstraintProfile;
-        if (profile == null) return true;
+        var sr = await db.StaffingRequests
+            .Include(s => s.Location)
+            .Include(s => s.JobRole)
+            .FirstOrDefaultAsync(s => s.Id == staffingRequestId);
 
-        var allAssignments = existing.Concat(pending).Where(a => a.UserId == user.Id).ToList();
+        if (sr == null) return (null, "Staffing request not found.");
+        if (sr.Status == "Fulfilled") return (null, "This request is already fulfilled.");
 
-        // Check max hours per day
-        var hoursOnDay = allAssignments
-            .Where(a => a.Date == date)
-            .Sum(a => (a.EndTime - a.StartTime).TotalHours);
+        var alreadyAssigned = await db.ShiftAssignments
+            .Where(a => a.StaffingRequestId == staffingRequestId)
+            .Select(a => a.UserId)
+            .ToListAsync();
 
-        if (hoursOnDay + shiftHours > profile.MaxHoursPerDay) return false;
+        var allUsers = await db.Users
+            .Include(u => u.ConstraintProfile)
+            .Where(u => u.JobRoleId == sr.JobRoleId && !alreadyAssigned.Contains(u.Id))
+            .ToListAsync();
 
-        // Check max hours per week
-        var weekStart = date.AddDays(-(int)date.DayOfWeek);
-        var weekEnd = weekStart.AddDays(6);
-        var hoursThisWeek = allAssignments
-            .Where(a => a.Date >= weekStart && a.Date <= weekEnd)
-            .Sum(a => (a.EndTime - a.StartTime).TotalHours);
+        var approvedLeaves = await db.LeaveRequests
+            .Where(l => l.Status == "Approved")
+            .ToListAsync();
 
-        if (hoursThisWeek + shiftHours > profile.MaxHoursPerWeek) return false;
+        var unavailableDates = await db.StaffAvailabilities
+            .Where(a => !a.IsAvailable)
+            .ToListAsync();
 
-        // Check max consecutive days
-        var consecutiveDays = 0;
-        var checkDate = date.AddDays(-1);
-        while (allAssignments.Any(a => a.Date == checkDate))
+        var existingAssignments = await db.ShiftAssignments
+            .Where(a => a.Date == sr.Date)
+            .ToListAsync();
+
+        var newAssignments = new List<ShiftAssignment>();
+        var shiftHours = (sr.EndTime - sr.StartTime).TotalHours;
+        var assigned = 0;
+
+        var eligibleUsers = allUsers
+            .OrderBy(u => existingAssignments
+                .Where(a => a.UserId == u.Id &&
+                            a.Date >= sr.Date.AddDays(-(int)sr.Date.DayOfWeek) &&
+                            a.Date <= sr.Date.AddDays(6 - (int)sr.Date.DayOfWeek))
+                .Sum(a => (a.EndTime - a.StartTime).TotalHours))
+            .ToList();
+
+        foreach (var user in eligibleUsers)
         {
-            consecutiveDays++;
-            checkDate = checkDate.AddDays(-1);
+            if (assigned >= sr.RequiredCount) break;
+            if (RosterHelper.IsOnLeave(user.Id, sr.Date, approvedLeaves)) continue;
+            if (RosterHelper.IsUnavailable(user.Id, sr.Date, unavailableDates)) continue;
+            if (!RosterHelper.PassesConstraints(user, sr.Date, shiftHours, existingAssignments, newAssignments)) continue;
+
+            newAssignments.Add(new ShiftAssignment
+            {
+                UserId = user.Id,
+                StaffingRequestId = sr.Id,
+                Date = sr.Date,
+                StartTime = sr.StartTime,
+                EndTime = sr.EndTime,
+                LocationId = sr.LocationId,
+                JobRoleId = sr.JobRoleId
+            });
+            assigned++;
         }
 
-        if (consecutiveDays >= profile.MaxConsecutiveDays) return false;
+        var totalAssigned = alreadyAssigned.Count + assigned;
 
-        return true;
+        if (totalAssigned == 0)
+            sr.Status = "Pending";
+        else if (totalAssigned < sr.RequiredCount)
+            sr.Status = "Partially Filled";
+        else
+            sr.Status = "Fulfilled";
+
+        db.ShiftAssignments.AddRange(newAssignments);
+        await db.SaveChangesAsync();
+
+        foreach (var a in newAssignments)
+        {
+            await db.Entry(a).Reference(x => x.User).LoadAsync();
+            await db.Entry(a).Reference(x => x.Location).LoadAsync();
+            await db.Entry(a).Reference(x => x.JobRole).LoadAsync();
+        }
+
+        return (new GenerateForRequestResult
+        {
+            StaffingRequestId = sr.Id,
+            RequiredCount = sr.RequiredCount,
+            AssignedCount = totalAssigned,
+            UnfilledCount = sr.RequiredCount - totalAssigned,
+            Status = sr.Status,
+            Assignments = newAssignments.Select(ToResponse).ToList()
+        }, null);
     }
 
     private static ShiftAssignmentResponse ToResponse(ShiftAssignment a) => new()

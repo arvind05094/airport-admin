@@ -9,6 +9,7 @@ import LoadingSpinner from "../../components/LoadingSpinner";
 import PageHeader from "../../components/PageHeader";
 import StatusBadge from "../../components/StatusBadge";
 import BulkRequestForm, { type BulkRow } from "@/components/BulkRequestForm";
+import { useNavigate } from "react-router-dom";
 interface CreateForm {
   locationId: number;
   jobRoleId: number;
@@ -42,6 +43,7 @@ export default function MyStaffingRequestsPage() {
   const { data: jobRoles } = useFetch<JobRole[]>("/api/admin/job-roles");
   const [mode, setMode] = useState<FormMode>("none");
   const [form, setForm] = useState<CreateForm>(emptyForm);
+  const navigate = useNavigate();
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -266,7 +268,8 @@ export default function MyStaffingRequestsPage() {
               {(requests ?? []).map((req) => (
                 <tr
                   key={req.id}
-                  className="border-b border-gray-100 last:border-0 even:bg-gray-50"
+                  onClick={() => navigate(`/staffing-requests/${req.id}`)}
+                  className="border-b border-gray-100 last:border-0 even:bg-gray-50 cursor-pointer hover:bg-gray-50"
                 >
                   <td className="px-4 py-3">{req.locationName}</td>
                   <td className="px-4 py-3 text-gray-500">{req.jobRoleName}</td>

@@ -177,4 +177,57 @@ public class StaffingRequestService(AppDbContext db)
         Status = s.Status,
         CreatedAt = s.CreatedAt
     };
+
+    public async Task<(StaffingRequestDetailResponse? result, string? error)> GetDetailAsync(int id, int userId, string role)
+    {
+        var sr = await db.StaffingRequests
+            .Include(s => s.CreatedBy)
+            .Include(s => s.Location)
+            .Include(s => s.JobRole)
+            .FirstOrDefaultAsync(s => s.Id == id);
+
+        if (sr == null) return (null, "Staffing request not found.");
+        if (role != "Admin" && sr.CreatedById != userId)
+            return (null, "Not authorized.");
+
+        var assignments = await db.ShiftAssignments
+            .Include(a => a.User)
+            .Include(a => a.Location)
+            .Include(a => a.JobRole)
+            .Where(a => a.StaffingRequestId == id)
+            .ToListAsync();
+
+        var assignedCount = assignments.Count;
+
+        return (new StaffingRequestDetailResponse
+        {
+            Id = sr.Id,
+            CreatedById = sr.CreatedById,
+            CreatedByFullName = sr.CreatedBy?.FullName ?? string.Empty,
+            LocationId = sr.LocationId,
+            LocationName = sr.Location?.Name ?? string.Empty,
+            JobRoleId = sr.JobRoleId,
+            JobRoleName = sr.JobRole?.Name ?? string.Empty,
+            Date = sr.Date,
+            StartTime = sr.StartTime,
+            EndTime = sr.EndTime,
+            RequiredCount = sr.RequiredCount,
+            AssignedCount = assignedCount,
+            UnfilledCount = sr.RequiredCount - assignedCount,
+            Status = sr.Status,
+            CreatedAt = sr.CreatedAt,
+            Assignments = assignments.Select(a => new ShiftAssignmentResponse
+            {
+                Id = a.Id,
+                UserId = a.UserId,
+                UserFullName = a.User?.FullName ?? string.Empty,
+                StaffingRequestId = a.StaffingRequestId,
+                Date = a.Date,
+                StartTime = a.StartTime,
+                EndTime = a.EndTime,
+                LocationName = a.Location?.Name ?? string.Empty,
+                JobRoleName = a.JobRole?.Name ?? string.Empty
+            }).ToList()
+        }, null);
+    }
 }
