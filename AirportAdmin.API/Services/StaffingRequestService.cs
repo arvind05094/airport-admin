@@ -145,22 +145,6 @@ public class StaffingRequestService(AppDbContext db)
         return (true, null);
     }
 
-    public async Task<(StaffingRequestResponse? result, string? error)> FulfilAsync(int id)
-    {
-        var request = await db.StaffingRequests
-            .Include(s => s.CreatedBy)
-            .Include(s => s.Location)
-            .Include(s => s.JobRole)
-            .FirstOrDefaultAsync(s => s.Id == id);
-
-        if (request == null) return (null, "Staffing request not found.");
-        if (request.Status != "Pending") return (null, "Only pending requests can be fulfilled.");
-
-        request.Status = "Fulfilled";
-        await db.SaveChangesAsync();
-        return (ToResponse(request), null);
-    }
-
     private static StaffingRequestResponse ToResponse(StaffingRequest s) => new()
     {
         Id = s.Id,

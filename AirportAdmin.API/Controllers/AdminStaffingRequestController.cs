@@ -13,11 +13,4 @@ public class AdminStaffingRequestController(StaffingRequestService staffingReque
     public async Task<IActionResult> GetAll() =>
         Ok(await staffingRequestService.GetAllAsync());
 
-    [HttpPut("{id}/fulfil")]
-    public async Task<IActionResult> Fulfil(int id)
-    {
-        var (result, error) = await staffingRequestService.FulfilAsync(id);
-        if (error != null) return BadRequest(new { message = error });
-        return Ok(result);
-    }
 }
