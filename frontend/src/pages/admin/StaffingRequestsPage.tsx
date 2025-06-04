@@ -17,16 +17,6 @@ export default function StaffingRequestsPage() {
     refetch,
   } = useFetch<AdminStaffingRequest[]>("/api/admin/staffing-requests");
 
-  const handleFulfil = async (id: number) => {
-    try {
-      await api.put(`/api/admin/staffing-requests/${id}/fulfil`);
-      toast.success("Request marked as fulfilled");
-      refetch();
-    } catch {
-      toast.error("Failed to fulfil request");
-    }
-  };
-
   if (loading) return <LoadingSpinner />;
   if (error)
     return (
@@ -65,7 +55,6 @@ export default function StaffingRequestsPage() {
                 <th className="text-left px-4 py-3 font-medium text-gray-600">
                   Status
                 </th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600"></th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600">
                   Created At
                 </th>
@@ -92,16 +81,6 @@ export default function StaffingRequestsPage() {
                   </td>
                   <td className="px-4 py-3">
                     <StatusBadge status={req.status} />
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    {req.status === "Pending" && (
-                      <button
-                        onClick={() => handleFulfil(req.id)}
-                        className="text-xs text-green-600 hover:text-green-800 border border-green-300 rounded px-2 py-1 transition"
-                      >
-                        Fulfil
-                      </button>
-                    )}
                   </td>
                   <td className="px-4 py-3 text-gray-500">
                     {formatDate(req.createdAt)}

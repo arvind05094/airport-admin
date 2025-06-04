@@ -1,9 +1,17 @@
 import EmptyState from "@/components/EmptyState";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import StatusBadge from "@/components/StatusBadge";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useAuth } from "@/hooks/useAuth";
 import { useFetch } from "@/hooks/useFetch";
 import api, { formatDate, formatTime, getErrorMessage } from "@/lib/api";
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -36,6 +44,8 @@ export default function StaffingRequestDetailPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const isAdmin = user?.role === "Admin";
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [generating, setGenerating] = useState(false);
 
   const {
     data: request,
@@ -43,15 +53,17 @@ export default function StaffingRequestDetailPage() {
     error,
     refetch,
   } = useFetch<StaffingRequestDetail>(`/api/staffing-requests/${id}`);
-
   const handleGenerate = async () => {
-    if (!confirm("Generate roster for this staffing request?")) return;
+    setGenerating(true);
     try {
       await api.post(`/api/admin/roster/generate/${id}`);
       toast.success("Roster generated");
+      setShowConfirm(false);
       refetch();
     } catch (err: unknown) {
       toast.error(getErrorMessage(err, "Failed to generate roster"));
+    } finally {
+      setGenerating(false);
     }
   };
 
@@ -80,7 +92,7 @@ export default function StaffingRequestDetailPage() {
           </div>
           {isAdmin && request.status !== "Fulfilled" && (
             <button
-              onClick={handleGenerate}
+              onClick={() => setShowConfirm(true)}
               className="bg-black text-white text-sm px-4 py-2 rounded-md hover:bg-gray-800 transition"
             >
               Generate Roster
@@ -185,6 +197,32 @@ export default function StaffingRequestDetailPage() {
           </table>
         </div>
       </div>
+      <Dialog open={showConfirm} onOpenChange={setShowConfirm}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Generate Roster</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-gray-600">
+            Generate roster assignments for this staffing request? Available
+            staff matching the job role will be automatically assigned.
+          </p>
+          <DialogFooter>
+            <button
+              onClick={() => setShowConfirm(false)}
+              className="text-sm text-gray-500 hover:text-black transition px-4 py-2"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleGenerate}
+              disabled={generating}
+              className="bg-black text-white text-sm px-4 py-2 rounded-md hover:bg-gray-800 transition disabled:opacity-50"
+            >
+              {generating ? "Generating..." : "Confirm"}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
