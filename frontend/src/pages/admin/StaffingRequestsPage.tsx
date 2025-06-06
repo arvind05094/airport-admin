@@ -1,5 +1,4 @@
-import { toast } from "sonner";
-import api, { formatDate } from "../../lib/api";
+import { formatDate } from "../../lib/api";
 import { useFetch } from "../../hooks/useFetch";
 import type { AdminStaffingRequest } from "../../types/admin";
 import EmptyState from "../../components/EmptyState";
@@ -14,7 +13,6 @@ export default function StaffingRequestsPage() {
     data: requests,
     loading,
     error,
-    refetch,
   } = useFetch<AdminStaffingRequest[]>("/api/admin/staffing-requests");
 
   if (loading) return <LoadingSpinner />;

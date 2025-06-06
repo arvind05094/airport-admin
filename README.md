@@ -119,11 +119,19 @@ npm install
 npm run dev
 ```
 
+## Testing
+
+Unit tests for the roster generation constraint logic live in `AirportAdmin.API.Tests` (xUnit). Run with:
+
+```bash
+dotnet test
+```
+
 ## Future Improvements
 
 - Drag-and-drop manual roster editing in the admin UI
 - Notifications for leave/cover approvals
-- Unit/integration test coverage for the roster generation algorithm
+- Broader test coverage (services, controllers)
 - Pagination and filtering on list endpoints
 - Audit log for admin actions
 
