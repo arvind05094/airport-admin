@@ -1,12 +1,49 @@
 # Airport Admin
 
-A full-stack staff scheduling and workforce management system for airport ground operations — built to demonstrate a production-style .NET API alongside a modern React frontend.
+A staff scheduling and workforce management system, built around how airport ground operations actually work — multiple locations, multiple job roles, staffing requirements that change day to day, and a roster that needs to respect leave, availability, and working-hour limits.
 
-## Overview
+This is a personal project I built to get hands-on with a "real" ASP.NET Core backend (auth, EF Core, layered services, a non-trivial scheduling algorithm) paired with a React/TypeScript frontend that actually consumes it.
 
-Airport Admin lets ground staff and administrators manage rosters, leave requests, shift cover swaps, and staffing requirements across multiple airport locations and job roles. Admins can generate weekly rosters automatically based on staffing demand, employee availability, approved leave, and configurable scheduling constraints (e.g. max hours per day/week, max consecutive days).
+🔗 **Live demo:** [airport-admin.pages.dev](https://airport-admin.pages.dev/)
+🔗 **API:** [airport-admin.onrender.com](https://airport-admin.onrender.com)
 
-This project was built to demonstrate practical ASP.NET Core API design — authentication, EF Core modelling/migrations, a layered service architecture, and a non-trivial scheduling algorithm — paired with a modern React + TypeScript frontend consuming that API.
+> The API runs on Render's free tier, so the first request after a period of inactivity can take 20–30 seconds to wake up. Everything after that is normal speed.
+
+### Try it out
+
+```
+Email:    admin@airportadmin.com
+Password: Admin123!
+```
+
+This account has the Admin role, so you can see the full picture — managing users, locations, job roles, staffing requests, leave/cover approvals, and generating rosters.
+
+![Admin dashboard](docs/screenshot-dashboard.png)
+
+## What it does
+
+The core idea: admins (or supervisors) raise **staffing requests** — e.g. "Terminal-1 needs 5 Security staff on 13 Jun, 14:22–19:22" — and the system can then generate a roster that fills those requests with eligible staff.
+
+![Staffing request detail with generated roster](docs/screenshot-generate-roster.png)
+
+A few things that make the roster generation non-trivial:
+
+- **Job role matching** — staff are only assigned to requests matching their job role
+- **Leave-aware** — anyone with approved leave on that date is skipped
+- **Availability-aware** — staff can mark themselves unavailable on specific dates
+- **Constraint profiles** — configurable rules per employee (max hours/day, max hours/week, max consecutive working days), so the algorithm won't schedule someone into overtime or back-to-back weeks
+- **Fair-ish distribution** — when choosing between multiple eligible staff, it prefers whoever has fewer hours scheduled that week already
+- Each staffing request ends up marked **Fulfilled**, **Partially Filled**, or **Pending**, depending on how many spots could actually be filled — in the screenshot above, 2 of 5 required staff were assigned
+
+Once a roster is generated, staff can see their own upcoming shifts:
+
+![Crew member's roster view](docs/screenshot-my-roster.png)
+
+And supervisors can raise staffing requests for their own team without needing admin access:
+
+![Supervisor's staffing requests view](docs/screenshot-my-staffing-requests.png)
+
+On top of that, there's the usual stuff you'd expect from an internal admin tool: leave requests with approval workflow, shift cover swaps, and role-based access (Admin / Supervisor / Crew, with separate "My X" self-service views vs "Admin X" management views).
 
 ## Tech Stack
 
@@ -14,32 +51,44 @@ This project was built to demonstrate practical ASP.NET Core API design — auth
 
 - .NET 9 / ASP.NET Core Web API
 - Entity Framework Core 9 + PostgreSQL (Npgsql)
-- JWT Bearer authentication
+- JWT Bearer authentication, BCrypt password hashing
 - Layered architecture: Controllers → Services → EF Core DbContext
 
 **Frontend**
 
 - React 19 + TypeScript + Vite
-- Tailwind CSS, Radix UI, shadcn/ui
+- Tailwind CSS, Radix UI, shadcn/ui components
 - React Router, React Hook Form, Axios
 
-## Key Features
+**Hosting**
 
-- **Authentication & Roles** — JWT-based auth with Admin / Crew role separation, password hashing via BCrypt
-- **Roster Generation Engine** — automatically assigns staff to open shifts based on:
-  - Job role match between staff and staffing request
-  - Approved leave (staff on leave are skipped)
-  - Marked unavailability
-  - Constraint profiles (max hours/day, max hours/week, max consecutive days)
-  - Fair distribution — staff with fewer hours already scheduled that week are prioritized first
-  - Each staffing request ends up **Fulfilled**, **Partially Filled**, or **Pending** depending on how many of the required positions could be filled
-- **Staffing Requests** — admins define required coverage by location, job role, date, shift time, and headcount
-- **Leave Management** — staff submit leave requests; admins review and approve/reject
-- **Shift Cover** — staff can request cover for assigned shifts; admins manage approvals
-- **Availability** — staff mark unavailable dates, factored into roster generation
-- **Constraint Profiles** — reusable, configurable scheduling rules assigned per employee
-- **Locations & Job Roles** — admin-managed reference data for scheduling
-- **My\* vs Admin\* endpoints** — clear separation between self-service endpoints (staff viewing/managing their own roster, leave, availability, cover requests) and admin management endpoints
+- API on [Render](https://render.com) (Docker)
+- Database on [Neon](https://neon.tech) (serverless Postgres)
+- Frontend on [Cloudflare Pages](https://pages.cloudflare.com)
+
+## Architecture
+
+```
+AirportAdmin.API/
+├── Controllers/       # API endpoints — Admin*, My*, and shared resources
+├── Services/          # Business logic (RosterService, LeaveService, etc.)
+├── Entities/           # EF Core entities
+├── DTOs/               # Request/response contracts
+├── Data/               # AppDbContext, migrations
+├── Helpers/            # JWT helper, roster constraint logic
+└── Middleware/
+
+AirportAdmin.API.Tests/ # xUnit tests for roster constraint logic
+
+frontend/
+└── src/
+    ├── pages/          # Route-level pages (admin/, my/, auth)
+    ├── components/      # Shared UI components, layout
+    ├── hooks/           # useAuth, useFetch
+    └── lib/             # API client, formatting helpers
+```
+
+The split between `Admin*` and `My*` controllers/pages mirrors the actual permission boundary in the app — admins manage org-wide data, while staff and supervisors have a self-service view scoped to their own records.
 
 ## API Overview
 
@@ -61,28 +110,9 @@ This project was built to demonstrate practical ASP.NET Core API design — auth
 | Roster (admin)                | `/api/admin/roster`, `/api/admin/roster/generate`, `/api/admin/roster/generate/{staffingRequestId}` | Generate and manage rosters       |
 | Roster (self)                 | `/api/my/roster`                                                                                    | View own assigned shifts          |
 
-All routes except `/api/auth/*` require a valid JWT bearer token; admin routes additionally require the `Admin` role.
+Everything except `/api/auth/*` requires a JWT bearer token, and admin routes require the `Admin` role.
 
-## Architecture
-
-```
-AirportAdmin.API/
-├── Controllers/      # API endpoints (Admin*, My*, and shared resources)
-├── Services/         # Business logic (RosterService, LeaveService, etc.)
-├── Entities/          # EF Core entities
-├── DTOs/              # Request/response contracts
-├── Data/              # AppDbContext, migrations
-├── Helpers/           # JWT helper, etc.
-└── Middleware/
-
-frontend/
-├── src/
-│   ├── pages/
-│   ├── components/
-│   └── ...
-```
-
-## Getting Started
+## Running it locally
 
 ### Prerequisites
 
@@ -92,10 +122,6 @@ frontend/
 
 ### Backend
 
-```bash
-cd AirportAdmin.API
-```
-
 Create a `.env` file in `AirportAdmin.API/`:
 
 ```
@@ -104,9 +130,10 @@ JWT_SECRET=your-secret-key
 JWT_EXPIRY_HOURS=24
 ```
 
-Then run:
+Then:
 
 ```bash
+cd AirportAdmin.API
 dotnet ef database update
 dotnet run
 ```
@@ -119,21 +146,23 @@ npm install
 npm run dev
 ```
 
+By default the frontend points at `http://localhost:5196`. To point it at a different API, set `VITE_API_URL`.
+
 ## Testing
 
-Unit tests for the roster generation constraint logic live in `AirportAdmin.API.Tests` (xUnit). Run with:
+The roster constraint logic (`RosterHelper`) is covered by unit tests in `AirportAdmin.API.Tests`:
 
 ```bash
 dotnet test
 ```
 
-## Future Improvements
+## What I'd add next
 
-- Drag-and-drop manual roster editing in the admin UI
+- Drag-and-drop manual roster editing
 - Notifications for leave/cover approvals
-- Broader test coverage (services, controllers)
-- Pagination and filtering on list endpoints
-- Audit log for admin actions
+- More test coverage — services and controllers, not just the roster helper
+- Pagination/filtering on list endpoints
+- An audit log for admin actions
 
 ## License
 
