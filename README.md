@@ -1,5 +1,3 @@
-<h1 align="center">✈️ Airport Admin</h1>
-
 <p align="center">
   A staff scheduling and workforce management system for airport ground operations.
 </p>
@@ -44,12 +42,12 @@ This account has the Admin role, so you can see the full picture — managing us
 
 ## Screenshots
 
-| Dashboard                                          | Generated Roster                                                               |
-| --------------------------------------------------- | --------------------------------------------------------------------------------- |
+| Dashboard                                         | Generated Roster                                                               |
+| ------------------------------------------------- | ------------------------------------------------------------------------------ |
 | ![Admin dashboard](docs/screenshot-dashboard.png) | ![Staffing request with generated roster](docs/screenshot-generate-roster.png) |
 
-| My Roster                                                    | My Staffing Requests                                                             |
-| --------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| My Roster                                                   | My Staffing Requests                                                             |
+| ----------------------------------------------------------- | -------------------------------------------------------------------------------- |
 | ![Crew member's roster view](docs/screenshot-my-roster.png) | ![Supervisor's staffing requests view](docs/screenshot-my-staffing-requests.png) |
 
 ---
@@ -145,7 +143,7 @@ Frontend available at `http://localhost:5173`. Set `VITE_API_URL` in `.env` if p
 ## API Overview
 
 | Area                          | Routes                                                                                              | Description                       |
-| ----------------------------- | ----------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| ----------------------------- | --------------------------------------------------------------------------------------------------- | --------------------------------- |
 | Auth                          | `POST /api/auth/register`, `POST /api/auth/login`                                                   | Account creation and JWT login    |
 | Users (admin)                 | `/api/admin/users`                                                                                  | CRUD for staff accounts           |
 | Locations / Job Roles (admin) | `/api/admin/locations`, `/api/admin/job-roles`                                                      | Reference data management         |
