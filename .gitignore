@@ -5,3 +5,5 @@
 .vs/
 **/node_modules/
 **/dist/
+.render.env
+.env

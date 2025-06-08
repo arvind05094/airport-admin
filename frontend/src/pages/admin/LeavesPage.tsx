@@ -1,5 +1,5 @@
 import { toast } from "sonner";
-import api from "../../lib/api";
+import api, { formatDate } from "../../lib/api";
 import { useFetch } from "../../hooks/useFetch";
 import type { AdminLeave } from "../../types/admin";
 import EmptyState from "../../components/EmptyState";
@@ -67,8 +67,8 @@ export default function LeavesPage() {
                   className="border-b border-gray-100 last:border-0 even:bg-gray-50"
                 >
                   <td className="px-4 py-3">{leave.userFullName}</td>
-                  <td className="px-4 py-3 text-gray-500">{leave.startDate}</td>
-                  <td className="px-4 py-3 text-gray-500">{leave.endDate}</td>
+                  <td className="px-4 py-3 text-gray-500">{formatDate(leave.startDate)}</td>
+                  <td className="px-4 py-3 text-gray-500">{formatDate(leave.endDate)}</td>
                   <td className="px-4 py-3 text-gray-500">{leave.reason}</td>
                   <td className="px-4 py-3">
                     <StatusBadge status={leave.status} />

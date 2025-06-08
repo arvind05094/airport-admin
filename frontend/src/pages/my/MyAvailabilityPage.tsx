@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import api, { getErrorMessage } from "../../lib/api";
+import api, { formatDate, getErrorMessage } from "../../lib/api";
 import { useFetch } from "../../hooks/useFetch";
 import type { MyAvailability } from "../../types/my";
 import EmptyState from "../../components/EmptyState";
@@ -104,7 +104,7 @@ export default function MyAvailabilityPage() {
                   key={r.id}
                   className="border-b border-gray-100 last:border-0 even:bg-gray-50"
                 >
-                  <td className="px-4 py-3">{r.date}</td>
+                  <td className="px-4 py-3">{formatDate(r.date)}</td>
                   <td className="px-4 py-3">
                     <span
                       className={`text-xs font-medium px-2 py-1 rounded-full ${r.isAvailable ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}

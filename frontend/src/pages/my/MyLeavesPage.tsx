@@ -6,7 +6,7 @@ import LoadingSpinner from "../../components/LoadingSpinner";
 import PageHeader from "../../components/PageHeader";
 import StatusBadge from "../../components/StatusBadge";
 import { useState } from "react";
-import api, { getErrorMessage } from "@/lib/api";
+import api, { formatDate, getErrorMessage } from "@/lib/api";
 
 interface ApplyForm {
   startDate: string;
@@ -140,8 +140,8 @@ export default function MyLeavesPage() {
                   key={leave.id}
                   className="border-b border-gray-100 last:border-0 even:bg-gray-50"
                 >
-                  <td className="px-4 py-3">{leave.startDate}</td>
-                  <td className="px-4 py-3">{leave.endDate}</td>
+                  <td className="px-4 py-3">{formatDate(leave.startDate)}</td>
+                  <td className="px-4 py-3">{formatDate(leave.endDate)}</td>
                   <td className="px-4 py-3 text-gray-500">{leave.reason}</td>
                   <td className="px-4 py-3">
                     <StatusBadge status={leave.status} />

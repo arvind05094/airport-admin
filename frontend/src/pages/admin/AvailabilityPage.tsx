@@ -1,4 +1,5 @@
 import { useFetch } from "../../hooks/useFetch";
+import { formatDate } from "../../lib/api";
 import type { AdminAvailability } from "../../types/admin";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import PageHeader from "../../components/PageHeader";
@@ -44,7 +45,7 @@ export default function AvailabilityPage() {
                   className="border-b border-gray-100 last:border-0 even:bg-gray-50"
                 >
                   <td className="px-4 py-3">{r.userFullName}</td>
-                  <td className="px-4 py-3 text-gray-500">{r.date}</td>
+                  <td className="px-4 py-3 text-gray-500">{formatDate(r.date)}</td>
                   <td className="px-4 py-3">
                     <span
                       className={`text-xs font-medium px-2 py-1 rounded-full ${r.isAvailable ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
