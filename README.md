@@ -1,8 +1,4 @@
-<p align="center">
-  <img src="frontend/public/favicon.svg" width="64" height="64" alt="Airport Admin logo" />
-</p>
-
-<h1 align="center">Airport Admin</h1>
+<h1 align="center">✈️ Airport Admin</h1>
 
 <p align="center">
   A staff scheduling and workforce management system for airport ground operations.
