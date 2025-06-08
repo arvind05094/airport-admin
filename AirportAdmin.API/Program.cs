@@ -6,6 +6,7 @@ using dotenv.net;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Scalar.AspNetCore;
 
 DotEnv.Load(options: new DotEnvOptions(envFilePaths: new[] { ".env" }));
 
@@ -61,6 +62,7 @@ builder.Services.AddScoped<RosterService>();
 var app = builder.Build();
 
 app.MapOpenApi();
+app.MapScalarApiReference();
 
 app.UseCors("AllowFrontend");
 app.UseAuthentication();
