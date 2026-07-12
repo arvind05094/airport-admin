@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -11,6 +12,7 @@ interface LoginForm {
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const [showSlowMessage, setShowSlowMessage] = useState(false);
   const {
     register,
     handleSubmit,
@@ -18,12 +20,16 @@ export default function LoginPage() {
   } = useForm<LoginForm>();
 
   const onSubmit = async (data: LoginForm) => {
+    const timer = setTimeout(() => setShowSlowMessage(true), 3000);
     try {
       const res = await api.post<AuthResponse>("/api/auth/login", data);
       localStorage.setItem("token", res.data.token);
       navigate("/dashboard");
     } catch (err) {
       toast.error("Invalid email or password");
+    } finally {
+      clearTimeout(timer);
+      setShowSlowMessage(false);
     }
   };
 
@@ -71,6 +77,12 @@ export default function LoginPage() {
           >
             {isSubmitting ? "Signing in..." : "Sign in"}
           </button>
+
+          {isSubmitting && showSlowMessage && (
+            <p className="text-xs text-gray-400 text-center">
+              Waking up the server, this can take up to a minute...
+            </p>
+          )}
         </form>
 
         {/* Demo credentials */}
