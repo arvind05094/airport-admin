@@ -8,7 +8,7 @@
 </p>
 
 <p align="center">
-  <em>Note: the backend is hosted on Render's free tier and may take 20-30s to wake up on first request.</em>
+  <em>Note: the backend is hosted on Render's free tier and may take 5-10s to wake up on first request.</em>
 </p>
 
 ---
