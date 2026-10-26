@@ -47,6 +47,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend", policy =>
         policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 });
+
 builder.Services.AddScoped<JwtHelper>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<UserService>();
@@ -61,24 +62,15 @@ builder.Services.AddScoped<RosterService>();
 
 var app = builder.Build();
 
+// CORS middleware MUST execute before Auth and Controllers
+app.UseCors("AllowFrontend");
+
 app.MapOpenApi();
 app.MapScalarApiReference();
 
-app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
+
 app.Run();
-
-
-
-
-
-
-
-
-
-
-
-
-
