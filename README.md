@@ -15,9 +15,9 @@
 ## Screenshots
 
 | Admin dashboard | Staffing request with generated roster |
-| --- | --- |
+| :---: | :---: |
 | ![Admin dashboard](docs/screenshot-dashboard.png) | ![Staffing request with generated roster](docs/screenshot-generate-roster.png) |
-| _Admin dashboard_ | _A staffing request with its generated roster_ |
+
 
 ---
 
