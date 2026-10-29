@@ -23,13 +23,15 @@ public class UserService(AppDbContext db)
 
     public async Task<UserResponse?> CreateAsync(CreateUserRequest request)
     {
-        if (await db.Users.AnyAsync(u => u.Email == request.Email))
+        // Case-insensitive check to prevent duplicate email registration
+        var emailNormalized = request.Email.Trim().ToLower();
+        if (await db.Users.AnyAsync(u => u.Email.ToLower() == emailNormalized))
             return null;
 
         var user = new User
         {
             FullName = request.FullName,
-            Email = request.Email,
+            Email = request.Email.Trim(),
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
             Role = request.Role,
             JobRoleId = request.JobRoleId,
@@ -51,8 +53,18 @@ public class UserService(AppDbContext db)
             .FirstOrDefaultAsync(u => u.Id == id);
         if (user == null) return null;
 
+        if (request.Email != null)
+        {
+            var newEmailNormalized = request.Email.Trim().ToLower();
+            if (user.Email.ToLower() != newEmailNormalized &&
+                await db.Users.AnyAsync(u => u.Email.ToLower() == newEmailNormalized))
+            {
+                return null;
+            }
+            user.Email = request.Email.Trim();
+        }
+
         if (request.FullName != null) user.FullName = request.FullName;
-        if (request.Email != null) user.Email = request.Email;
         if (request.Role != null) user.Role = request.Role;
         if (request.JobRoleId.HasValue) user.JobRoleId = request.JobRoleId;
         if (request.ConstraintProfileId.HasValue) user.ConstraintProfileId = request.ConstraintProfileId;
@@ -67,6 +79,12 @@ public class UserService(AppDbContext db)
     {
         var user = await db.Users.FindAsync(id);
         if (user == null) return false;
+
+        // Prevent deletion of admin@airportadmin.com
+        if (string.Equals(user.Email, "admin@airportadmin.com", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException("The main administrator account (admin@airportadmin.com) cannot be deleted.");
+        }
 
         db.Users.Remove(user);
         await db.SaveChangesAsync();
@@ -86,4 +104,3 @@ public class UserService(AppDbContext db)
         CreatedAt = u.CreatedAt
     };
 }
-

@@ -30,28 +30,47 @@ export default function ConstraintProfilesPage() {
   } = useFetch<ConstraintProfile[]>("/api/admin/constraint-profiles");
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<CreateForm>(emptyForm);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
     try {
       await api.post("/api/admin/constraint-profiles", form);
       toast.success("Constraint profile created");
       setShowForm(false);
       setForm(emptyForm);
       refetch();
-    } catch {
-      toast.error("Failed to create constraint profile");
+    } catch (err: unknown) {
+      let message = "Failed to create constraint profile";
+      if (typeof err === "object" && err !== null && "response" in err) {
+        const axiosErr = err as { response?: { data?: { message?: string } } };
+        message = axiosErr.response?.data?.message || message;
+      } else if (err instanceof Error) {
+        message = err.message;
+      }
+      toast.error(message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("Delete this profile?")) return;
     try {
       await api.delete(`/api/admin/constraint-profiles/${id}`);
       toast.success("Profile deleted");
       refetch();
-    } catch {
-      toast.error("Failed to delete profile");
+    } catch (err: unknown) {
+      let message = "Failed to delete profile";
+      if (typeof err === "object" && err !== null && "response" in err) {
+        const axiosErr = err as { response?: { data?: { message?: string } } };
+        message = axiosErr.response?.data?.message || message;
+      } else if (err instanceof Error) {
+        message = err.message;
+      }
+      toast.error(message);
     }
   };
 
@@ -60,6 +79,7 @@ export default function ConstraintProfilesPage() {
     return (
       <div className="text-center py-12 text-red-500 text-sm">{error}</div>
     );
+
   return (
     <div>
       <PageHeader
@@ -80,9 +100,10 @@ export default function ConstraintProfilesPage() {
             <label className="text-sm font-medium block mb-1">Name</label>
             <input
               required
+              disabled={isSubmitting}
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black disabled:bg-gray-100 disabled:cursor-not-allowed"
             />
           </div>
           <div>
@@ -94,11 +115,12 @@ export default function ConstraintProfilesPage() {
               type="number"
               min={1}
               max={24}
+              disabled={isSubmitting}
               value={form.maxHoursPerDay}
               onChange={(e) =>
                 setForm({ ...form, maxHoursPerDay: +e.target.value })
               }
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black disabled:bg-gray-100 disabled:cursor-not-allowed"
             />
           </div>
           <div>
@@ -110,11 +132,12 @@ export default function ConstraintProfilesPage() {
               type="number"
               min={1}
               max={168}
+              disabled={isSubmitting}
               value={form.maxHoursPerWeek}
               onChange={(e) =>
                 setForm({ ...form, maxHoursPerWeek: +e.target.value })
               }
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black disabled:bg-gray-100 disabled:cursor-not-allowed"
             />
           </div>
           <div>
@@ -126,19 +149,21 @@ export default function ConstraintProfilesPage() {
               type="number"
               min={1}
               max={7}
+              disabled={isSubmitting}
               value={form.maxConsecutiveDays}
               onChange={(e) =>
                 setForm({ ...form, maxConsecutiveDays: +e.target.value })
               }
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black disabled:bg-gray-100 disabled:cursor-not-allowed"
             />
           </div>
           <div className="col-span-2">
             <button
               type="submit"
-              className="bg-black text-white text-sm px-4 py-2 rounded-md hover:bg-gray-800 transition"
+              disabled={isSubmitting}
+              className="bg-black text-white text-sm px-4 py-2 rounded-md hover:bg-gray-800 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
-              Create
+              {isSubmitting ? "Creating..." : "Create"}
             </button>
           </div>
         </form>

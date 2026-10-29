@@ -49,7 +49,7 @@ export default function MyShiftCoverPage() {
               {(requests ?? []).map((req) => (
                 <tr
                   key={req.id}
-                  className="border-b border-gray-100 last:border-0 even:bg-gray-50"
+                  className="border-b border-gray-100 last:border-0 even:bg-gray-50 hover:bg-gray-100/50 transition"
                 >
                   <td className="px-4 py-3">{formatDate(req.shiftDate)}</td>
                   <td className="px-4 py-3 text-gray-500">

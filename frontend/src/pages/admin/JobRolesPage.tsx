@@ -16,28 +16,47 @@ export default function JobRolesPage() {
   } = useFetch<JobRole[]>("/api/admin/job-roles");
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
     try {
       await api.post("/api/admin/job-roles", { name });
       toast.success("Job role created");
       setShowForm(false);
       setName("");
       refetch();
-    } catch {
-      toast.error("Failed to create job role");
+    } catch (err: unknown) {
+      let message = "Failed to create job role";
+      if (typeof err === "object" && err !== null && "response" in err) {
+        const axiosErr = err as { response?: { data?: { message?: string } } };
+        message = axiosErr.response?.data?.message || message;
+      } else if (err instanceof Error) {
+        message = err.message;
+      }
+      toast.error(message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("Delete this job role?")) return;
     try {
       await api.delete(`/api/admin/job-roles/${id}`);
       toast.success("Job role deleted");
       refetch();
-    } catch {
-      toast.error("Failed to delete job role");
+    } catch (err: unknown) {
+      let message = "Failed to delete job role";
+      if (typeof err === "object" && err !== null && "response" in err) {
+        const axiosErr = err as { response?: { data?: { message?: string } } };
+        message = axiosErr.response?.data?.message || message;
+      } else if (err instanceof Error) {
+        message = err.message;
+      }
+      toast.error(message);
     }
   };
 
@@ -46,6 +65,7 @@ export default function JobRolesPage() {
     return (
       <div className="text-center py-12 text-red-500 text-sm">{error}</div>
     );
+
   return (
     <div>
       <PageHeader
@@ -64,16 +84,18 @@ export default function JobRolesPage() {
         >
           <input
             required
+            disabled={isSubmitting}
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Job role name"
-            className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+            className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black disabled:bg-gray-100 disabled:cursor-not-allowed"
           />
           <button
             type="submit"
-            className="bg-black text-white text-sm px-4 py-2 rounded-md hover:bg-gray-800 transition"
+            disabled={isSubmitting}
+            className="bg-black text-white text-sm px-4 py-2 rounded-md hover:bg-gray-800 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
-            Create
+            {isSubmitting ? "Creating..." : "Create"}
           </button>
         </form>
       )}

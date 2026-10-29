@@ -53,7 +53,10 @@ export default function StaffingRequestDetailPage() {
     error,
     refetch,
   } = useFetch<StaffingRequestDetail>(`/api/staffing-requests/${id}`);
+
   const handleGenerate = async () => {
+    if (generating) return;
+
     setGenerating(true);
     try {
       await api.post(`/api/admin/roster/generate/${id}`);
@@ -179,7 +182,7 @@ export default function StaffingRequestDetailPage() {
               {request.assignments.map((a) => (
                 <tr
                   key={a.id}
-                  className="border-b border-gray-100 last:border-0 even:bg-gray-50"
+                  className="border-b border-gray-100 last:border-0 even:bg-gray-50 hover:bg-gray-100/50 transition"
                 >
                   <td className="px-4 py-3">{a.userFullName}</td>
                   <td className="px-4 py-3 text-gray-500">
@@ -197,7 +200,8 @@ export default function StaffingRequestDetailPage() {
           </table>
         </div>
       </div>
-      <Dialog open={showConfirm} onOpenChange={setShowConfirm}>
+
+      <Dialog open={showConfirm} onOpenChange={(open) => !generating && setShowConfirm(open)}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Generate Roster</DialogTitle>
@@ -209,14 +213,15 @@ export default function StaffingRequestDetailPage() {
           <DialogFooter>
             <button
               onClick={() => setShowConfirm(false)}
-              className="text-sm text-gray-500 hover:text-black transition px-4 py-2"
+              disabled={generating}
+              className="text-sm text-gray-500 hover:text-black transition px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Cancel
             </button>
             <button
               onClick={handleGenerate}
               disabled={generating}
-              className="bg-black text-white text-sm px-4 py-2 rounded-md hover:bg-gray-800 transition disabled:opacity-50"
+              className="bg-black text-white text-sm px-4 py-2 rounded-md hover:bg-gray-800 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
               {generating ? "Generating..." : "Confirm"}
             </button>

@@ -25,7 +25,7 @@ export default function LoginPage() {
       const res = await api.post<AuthResponse>("/api/auth/login", data);
       localStorage.setItem("token", res.data.token);
       navigate("/dashboard");
-    } catch (err) {
+    } catch  {
       toast.error("Invalid email or password");
     } finally {
       clearTimeout(timer);
@@ -45,7 +45,8 @@ export default function LoginPage() {
             <input
               {...register("email", { required: "Email is required" })}
               type="email"
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+              disabled={isSubmitting}
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black disabled:bg-gray-100 disabled:cursor-not-allowed"
               placeholder="admin@airport.com"
             />
             {errors.email && (
@@ -60,7 +61,8 @@ export default function LoginPage() {
             <input
               {...register("password", { required: "Password is required" })}
               type="password"
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+              disabled={isSubmitting}
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black disabled:bg-gray-100 disabled:cursor-not-allowed"
               placeholder="••••••••"
             />
             {errors.password && (
@@ -73,7 +75,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full bg-black text-white rounded-md py-2 text-sm font-medium hover:bg-gray-800 transition disabled:opacity-50"
+            className="w-full bg-black text-white rounded-md py-2 text-sm font-medium hover:bg-gray-800 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             {isSubmitting ? "Signing in..." : "Sign in"}
           </button>

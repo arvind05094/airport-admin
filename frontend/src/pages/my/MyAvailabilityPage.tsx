@@ -16,9 +16,13 @@ export default function MyAvailabilityPage() {
   } = useFetch<MyAvailability[]>("/api/my/availability");
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ date: "", isAvailable: false });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
     try {
       await api.post("/api/my/availability", form);
       toast.success("Availability updated");
@@ -27,6 +31,8 @@ export default function MyAvailabilityPage() {
       refetch();
     } catch (err: unknown) {
       toast.error(getErrorMessage(err, "Failed to submit"));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -35,6 +41,7 @@ export default function MyAvailabilityPage() {
     return (
       <div className="text-center py-12 text-red-500 text-sm">{error}</div>
     );
+
   return (
     <div>
       <PageHeader
@@ -56,20 +63,22 @@ export default function MyAvailabilityPage() {
             <input
               required
               type="date"
+              disabled={isSubmitting}
               value={form.date}
               onChange={(e) => setForm({ ...form, date: e.target.value })}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black disabled:bg-gray-100 disabled:cursor-not-allowed"
             />
           </div>
           <div className="flex items-end">
             <label className="flex items-center gap-2 text-sm cursor-pointer">
               <input
                 type="checkbox"
+                disabled={isSubmitting}
                 checked={form.isAvailable}
                 onChange={(e) =>
                   setForm({ ...form, isAvailable: e.target.checked })
                 }
-                className="rounded"
+                className="rounded disabled:cursor-not-allowed"
               />
               Available (uncheck = unavailable)
             </label>
@@ -77,9 +86,10 @@ export default function MyAvailabilityPage() {
           <div className="col-span-2">
             <button
               type="submit"
-              className="bg-black text-white text-sm px-4 py-2 rounded-md hover:bg-gray-800 transition"
+              disabled={isSubmitting}
+              className="bg-black text-white text-sm px-4 py-2 rounded-md hover:bg-gray-800 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
-              Submit
+              {isSubmitting ? "Submitting..." : "Submit"}
             </button>
           </div>
         </form>

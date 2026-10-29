@@ -18,12 +18,16 @@ export default function ShiftCoverPage() {
   const { data: users } = useFetch<AdminUser[]>("/api/admin/users");
   const [approvingId, setApprovingId] = useState<number | null>(null);
   const [coveredById, setCoveredById] = useState<number>(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleApprove = async (id: number) => {
     if (!coveredById) {
       toast.error("Please select a covering staff member");
       return;
     }
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
     try {
       await api.put(`/api/admin/shift-cover/${id}/approve`, { coveredById });
       toast.success("Request approved and shift reassigned");
@@ -32,16 +36,23 @@ export default function ShiftCoverPage() {
       refetch();
     } catch (err: unknown) {
       toast.error(getErrorMessage(err, "Failed to approve request"));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleReject = async (id: number) => {
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
     try {
       await api.put(`/api/admin/shift-cover/${id}/reject`);
       toast.success("Request rejected");
       refetch();
     } catch (err: unknown) {
       toast.error(getErrorMessage(err, "Failed to reject request"));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -50,6 +61,7 @@ export default function ShiftCoverPage() {
     return (
       <div className="text-center py-12 text-red-500 text-sm">{error}</div>
     );
+
   return (
     <div>
       <PageHeader
@@ -85,9 +97,8 @@ export default function ShiftCoverPage() {
             </thead>
             <tbody>
               {(requests ?? []).map((req) => (
-                <>
+                <tr key={req.id} className="contents">
                   <tr
-                    key={req.id}
                     className="border-b border-gray-100 last:border-0 even:bg-gray-50"
                   >
                     <td className="px-4 py-3">{req.requesterFullName}</td>
@@ -109,17 +120,19 @@ export default function ShiftCoverPage() {
                       {req.status === "Pending" && (
                         <>
                           <button
+                            disabled={isSubmitting}
                             onClick={() => {
                               setApprovingId(req.id);
                               setCoveredById(0);
                             }}
-                            className="text-xs text-green-600 hover:text-green-800 border border-green-300 rounded px-2 py-1 transition"
+                            className="text-xs text-green-600 hover:text-green-800 border border-green-300 rounded px-2 py-1 transition disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             Approve
                           </button>
                           <button
+                            disabled={isSubmitting}
                             onClick={() => handleReject(req.id)}
-                            className="text-xs text-red-500 hover:text-red-700 border border-red-300 rounded px-2 py-1 transition"
+                            className="text-xs text-red-500 hover:text-red-700 border border-red-300 rounded px-2 py-1 transition disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             Reject
                           </button>
@@ -129,15 +142,15 @@ export default function ShiftCoverPage() {
                   </tr>
                   {approvingId === req.id && (
                     <tr
-                      key={`approve-${req.id}`}
                       className="bg-green-50 border-b border-gray-100"
                     >
                       <td colSpan={7} className="px-4 py-3">
                         <div className="flex items-center gap-3">
                           <select
+                            disabled={isSubmitting}
                             value={coveredById}
                             onChange={(e) => setCoveredById(+e.target.value)}
-                            className="flex-1 border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+                            className="flex-1 border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-black disabled:bg-gray-100 disabled:cursor-not-allowed"
                           >
                             <option value={0}>Select covering staff...</option>
                             {(users ?? [])
@@ -149,14 +162,16 @@ export default function ShiftCoverPage() {
                               ))}
                           </select>
                           <button
+                            disabled={isSubmitting}
                             onClick={() => handleApprove(req.id)}
-                            className="bg-black text-white text-sm px-4 py-1.5 rounded-md hover:bg-gray-800 transition"
+                            className="bg-black text-white text-sm px-4 py-1.5 rounded-md hover:bg-gray-800 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
                           >
-                            Confirm
+                            {isSubmitting ? "Confirming..." : "Confirm"}
                           </button>
                           <button
+                            disabled={isSubmitting}
                             onClick={() => setApprovingId(null)}
-                            className="text-sm text-gray-500 hover:text-black transition"
+                            className="text-sm text-gray-500 hover:text-black transition disabled:opacity-50"
                           >
                             Cancel
                           </button>
@@ -164,7 +179,7 @@ export default function ShiftCoverPage() {
                       </td>
                     </tr>
                   )}
-                </>
+                </tr>
               ))}
               {(requests ?? []).length === 0 && (
                 <EmptyState

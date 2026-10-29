@@ -27,9 +27,13 @@ export default function MyLeavesPage() {
     endDate: "",
     reason: "",
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleApply = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
     try {
       await api.post("/api/my/leaves/apply", form);
       toast.success("Leave request submitted");
@@ -38,17 +42,23 @@ export default function MyLeavesPage() {
       refetch();
     } catch (err: unknown) {
       toast.error(getErrorMessage(err, "Failed to submit leave request"));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleCancel = async (id: number) => {
-    if (!confirm("Cancel this leave request?")) return;
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
     try {
       await api.delete(`/api/my/leaves/${id}`);
       toast.success("Leave request cancelled");
       refetch();
-    } catch {
-      toast.error("Failed to cancel leave request");
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, "Failed to cancel leave request"));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -57,6 +67,7 @@ export default function MyLeavesPage() {
     return (
       <div className="text-center py-12 text-red-500 text-sm">{error}</div>
     );
+
   return (
     <div>
       <PageHeader
@@ -78,9 +89,10 @@ export default function MyLeavesPage() {
             <input
               required
               type="date"
+              disabled={isSubmitting}
               value={form.startDate}
               onChange={(e) => setForm({ ...form, startDate: e.target.value })}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black disabled:bg-gray-100 disabled:cursor-not-allowed"
             />
           </div>
           <div>
@@ -88,27 +100,30 @@ export default function MyLeavesPage() {
             <input
               required
               type="date"
+              disabled={isSubmitting}
               value={form.endDate}
               onChange={(e) => setForm({ ...form, endDate: e.target.value })}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black disabled:bg-gray-100 disabled:cursor-not-allowed"
             />
           </div>
           <div className="col-span-2">
             <label className="text-sm font-medium block mb-1">Reason</label>
             <textarea
               required
+              disabled={isSubmitting}
               value={form.reason}
               onChange={(e) => setForm({ ...form, reason: e.target.value })}
               rows={3}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black disabled:bg-gray-100 disabled:cursor-not-allowed"
             />
           </div>
           <div className="col-span-2">
             <button
               type="submit"
-              className="bg-black text-white text-sm px-4 py-2 rounded-md hover:bg-gray-800 transition"
+              disabled={isSubmitting}
+              className="bg-black text-white text-sm px-4 py-2 rounded-md hover:bg-gray-800 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
-              Submit Request
+              {isSubmitting ? "Submitting..." : "Submit Request"}
             </button>
           </div>
         </form>
@@ -150,7 +165,8 @@ export default function MyLeavesPage() {
                     {leave.status === "Pending" && (
                       <button
                         onClick={() => handleCancel(leave.id)}
-                        className="text-xs text-red-500 hover:text-red-700 border border-red-300 rounded px-2 py-1 transition"
+                        disabled={isSubmitting}
+                        className="text-xs text-red-500 hover:text-red-700 border border-red-300 rounded px-2 py-1 transition disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         Cancel
                       </button>

@@ -1,17 +1,23 @@
+```markdown
 # Airport Admin
 
 **Staff scheduling for airport ground operations.** Raise staffing requests for a terminal, and the system generates a roster that fills them with eligible staff — respecting job roles, leave, availability, and each employee's working-hour limits.
 
-### 🔗 [Try the live demo →](https://airport-admin.pages.dev)
+🔗 **[Try the live demo →](https://airport-admin-640.pages.dev/login)** · **[API docs →](https://airport-admin-vjxb.onrender.com/scalar/#description/introduction)**  
+👤 **Connect:** [LinkedIn](https://www.linkedin.com/in/arvind-chauhan-dev/) · [Email](mailto:arvind05094@gmail.com)
 
-> **Note:** the demo backend spins down when it's not being used (that's how the free tier keeps costs at zero), so your **very first request may take ~10 seconds** while it spins back up. After that, it's quick.
+> **Heads-up:** the backend runs on a free cloud tier that sleeps when idle, so the **first request after a quiet spell can take ~10 seconds** to wake up. Everything is fast once it's warm.
 
 **Demo login** — `admin@airportadmin.com` / `Admin123!` (Admin role, so you see everything).
 
-|                                                   |                                                                                |
-| ------------------------------------------------- | ------------------------------------------------------------------------------ |
+---
+
+## Screenshots
+
+| Admin dashboard | Staffing request with generated roster |
+| --- | --- |
 | ![Admin dashboard](docs/screenshot-dashboard.png) | ![Staffing request with generated roster](docs/screenshot-generate-roster.png) |
-| _Admin dashboard_                                 | _A staffing request with its generated roster_                                 |
+| _Admin dashboard_ | _A staffing request with its generated roster_ |
 
 ---
 
@@ -29,14 +35,14 @@ It's the same kind of workforce-management system used to staff shifts in operat
 
 ### Try it in 60 seconds
 
-1. Open the [live demo](https://airport-admin.pages.dev) and sign in with the demo admin account above.
+1. Open the [live demo](https://airport-admin-640.pages.dev/login) and sign in with the demo admin account above.
 2. Create a **staffing request** for a location, job role, and time window.
 3. Hit **Generate roster** and watch it fill the request with eligible staff.
 4. Switch to a **"My Roster"** view to see how it looks from a crew member's side.
 
 ---
 
-## What it does (features)
+## Features
 
 - 🧩 **Staffing requests** — raised per location / job role / time window, tracked as Pending, Partially Filled, or Fulfilled.
 - 🗓 **Roster generation** — job-role matching, leave-aware, availability-aware; respects per-employee constraint profiles (max hours/day, max hours/week, max consecutive days) and prefers staff with fewer hours already scheduled that week.
@@ -58,6 +64,7 @@ flowchart LR
     A --> C[Apply constraint profile<br/>max hrs/day · week · consecutive days]
     C --> P[Prefer fewer hours<br/>scheduled this week]
     P --> O[(Assign shifts →<br/>Pending / Partial / Fulfilled)]
+
 ```
 
 A request flows through a straightforward layered backend:
@@ -68,23 +75,10 @@ flowchart LR
     Ctrl --> Svc[Service<br/>business logic]
     Svc --> DB[(EF Core / Postgres)]
     Svc --> Resp[Return DTO]
+
 ```
 
 The split between `Admin*` and `My*` controllers/pages mirrors the actual permission boundary: admins manage org-wide data, while staff and supervisors get a self-service view scoped to their own records.
-
----
-
-## Tech stack
-
-| Area                 | Technology                                                                                           |
-| -------------------- | ---------------------------------------------------------------------------------------------------- |
-| **Backend**          | .NET 9, ASP.NET Core Web API, layered Controllers → Services → DbContext                             |
-| **Data**             | EF Core 9 (Npgsql), PostgreSQL, code-first migrations                                                |
-| **Auth**             | JWT Bearer tokens, BCrypt password hashing, role-based authorization                                 |
-| **Scheduling logic** | `RosterService` + `RosterHelper` constraint engine (role, leave, availability, working-hour limits)  |
-| **Frontend**         | React 19, TypeScript, Vite, Tailwind CSS, Radix UI / shadcn/ui, React Router, React Hook Form, Axios |
-| **API**              | OpenAPI + interactive docs via Scalar                                                                |
-| **Cloud**            | Render (API, Docker), Cloudflare Pages (frontend), Neon (PostgreSQL)                                 |
 
 ---
 
@@ -96,14 +90,29 @@ flowchart TD
     SWA -->|REST + JWT| API[.NET API<br/>Render]
     API --> Svc[Services<br/>Roster · Leave · Cover]
     Svc --> PG[(PostgreSQL / Neon)]
+
 ```
 
 The backend is organised as **Controllers → Services → DbContext**:
 
-- **Controllers** — API endpoints, split into `Admin*`, `My*`, and shared resources.
-- **Services** — business logic (`RosterService`, `LeaveService`, etc.).
-- **Entities / DTOs** — EF Core entities and the request/response contracts exposed over the API.
-- **Helpers** — JWT helper and the roster constraint logic.
+* **Controllers** — API endpoints, split into `Admin*`, `My*`, and shared resources.
+* **Services** — business logic (`RosterService`, `LeaveService`, etc.).
+* **Entities / DTOs** — EF Core entities and the request/response contracts exposed over the API.
+* **Helpers** — JWT helper and the roster constraint logic.
+
+---
+
+## Tech stack
+
+| Area | Technology |
+| --- | --- |
+| **Backend** | .NET 9, ASP.NET Core Web API, layered Controllers → Services → DbContext |
+| **Data** | EF Core 9 (Npgsql), PostgreSQL, code-first migrations |
+| **Auth** | JWT Bearer tokens, BCrypt password hashing, role-based authorization |
+| **Scheduling logic** | `RosterService` + `RosterHelper` constraint engine (role, leave, availability, working-hour limits) |
+| **Frontend** | React 19, TypeScript, Vite, Tailwind CSS, Radix UI / shadcn/ui, React Router, React Hook Form, Axios |
+| **API** | OpenAPI + interactive docs via Scalar (`/scalar`) |
+| **Cloud** | Render (API, Docker), Cloudflare Pages (frontend), Neon serverless Postgres |
 
 ---
 
@@ -111,17 +120,17 @@ The backend is organised as **Controllers → Services → DbContext**:
 
 A few things worth calling out for a technical review:
 
-- **Constraint-based roster generation** — the generator isn't a naive fill; it filters by job role, leave, and availability, then enforces per-employee constraint profiles (max hours/day, week, and consecutive days) and balances load by preferring less-scheduled staff.
-- **Permission boundary in the shape of the code** — the `Admin*` vs `My*` split isn't just UI; it's the actual authorization boundary, so self-service endpoints can only ever touch the caller's own records.
-- **Testable core logic** — the roster constraint logic (`RosterHelper`) is isolated and covered by xUnit tests, so scheduling rules can change without fear.
-- **Role-based access** — Admin / Supervisor / Crew roles gate both routes and views, with admin routes requiring the `Admin` role.
-- **Clean auth** — JWT bearer tokens with BCrypt-hashed passwords; everything except `/api/auth/*` requires a token.
+* **Constraint-based roster generation** — the generator isn't a naive fill; it filters by job role, leave, and availability, then enforces per-employee constraint profiles (max hours/day, week, and consecutive days) and balances load by preferring less-scheduled staff.
+* **Permission boundary in the shape of the code** — the `Admin*` vs `My*` split isn't just UI; it's the actual authorization boundary, so self-service endpoints can only ever touch the caller's own records.
+* **Testable core logic** — the roster constraint logic (`RosterHelper`) is isolated and covered by xUnit tests, so scheduling rules can change without fear.
+* **Role-based access** — Admin / Supervisor / Crew roles gate both routes and views, with admin routes requiring the `Admin` role.
+* **Clean auth** — JWT bearer tokens with BCrypt-hashed passwords; everything except `/api/auth/*` requires a token.
 
 ---
 
 ## Running locally
 
-**Prerequisites:** .NET 9 SDK, Node 20+, PostgreSQL.
+**Prerequisites:** .NET 9 SDK, Node.js 20+, and PostgreSQL.
 
 ```bash
 # 1. Configure backend secrets
@@ -137,23 +146,26 @@ cd frontend
 cp .env.example .env
 npm install
 npm run dev                       # http://localhost:5173
-```
 
-Set `VITE_API_URL` in `frontend/.env` if you're pointing at a different API.
+```
 
 **Environment variables:**
 
-| Variable                  | Description                 |
-| ------------------------- | --------------------------- |
-| `DB_CONNECTION`           | Postgres connection string  |
-| `JWT_SECRET`              | JWT signing key             |
-| `JWT_EXPIRY_HOURS`        | JWT token lifetime          |
-| `VITE_API_URL` (frontend) | Base URL of the backend API |
+| Variable | Description |
+| --- | --- |
+| `DB_CONNECTION` | Postgres connection string |
+| `JWT_SECRET` | JWT signing secret key |
+| `JWT_EXPIRY_HOURS` | JWT token lifetime (e.g., `24`) |
+| `Cors__AllowedOrigins` | Allowed CORS origins (`https://airport-admin-640.pages.dev,http://localhost:5173`) |
+| `VITE_API_URL` *(frontend)* | Base URL of the backend API (`https://airport-admin-vjxb.onrender.com`) |
 
-**Run the tests:**
+---
+
+## Testing
 
 ```bash
 dotnet test
+
 ```
 
 The roster constraint logic (`RosterHelper`) is covered by unit tests in `AirportAdmin.API.Tests`.
@@ -162,9 +174,9 @@ The roster constraint logic (`RosterHelper`) is covered by unit tests in `Airpor
 
 ## Deployment
 
-- **Backend** — deployed to [Render](https://render.com) as a Docker web service.
-- **Frontend** — deployed to [Cloudflare Pages](https://pages.cloudflare.com), built from `frontend/` (`npm run build` → `dist`).
-- **Database** — [Neon](https://neon.tech) serverless Postgres.
+* **Backend** — deployed to [Render](https://render.com) (`https://airport-admin-vjxb.onrender.com`) as a Docker web service.
+* **Frontend** — deployed to [Cloudflare Pages](https://pages.cloudflare.com) (`https://airport-admin-640.pages.dev`), built from `frontend/` (`npm run build` → `dist`).
+* **Database** — [Neon](https://neon.tech) serverless Postgres.
 
 To keep costs near zero, the demo uses free tiers that scale to zero when idle — hence the ~10 second wake-up on the first request after a quiet period.
 
@@ -184,22 +196,9 @@ AirportAdmin.API/
 AirportAdmin.API.Tests/ # xUnit tests for roster constraint logic
 frontend/               # React + TypeScript app
 docs/                   # Screenshots, architecture diagram
+
 ```
 
 ---
 
-## What's next
-
-- Drag-and-drop manual roster editing
-- Notifications for leave / cover approvals
-- More test coverage — services and controllers, not just the roster helper
-- Pagination / filtering on list endpoints
-- An audit log for admin actions
-
-## License
-
-MIT
-
----
-
-_Built as a portfolio project to demonstrate constraint-based scheduling, role-based access control, and a layered .NET API on cloud-native infrastructure._
+*Built as a portfolio project to demonstrate constraint-based scheduling, role-based access control, and a layered .NET API on cloud-native infrastructure.*

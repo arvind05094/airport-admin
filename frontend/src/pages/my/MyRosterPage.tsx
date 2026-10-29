@@ -1,5 +1,4 @@
-import React from "react";
-import { useState } from "react";
+import React, { useState } from "react";
 import { toast } from "sonner";
 import api, { formatDate, formatTime, getErrorMessage } from "../../lib/api";
 import { useFetch } from "../../hooks/useFetch";
@@ -19,6 +18,8 @@ export default function MyRosterPage() {
   const [submitting, setSubmitting] = useState(false);
 
   const handleRequestCover = async (assignmentId: number) => {
+    if (submitting) return;
+
     setSubmitting(true);
     try {
       await api.post("/api/my/shift-cover/apply", {
@@ -40,6 +41,7 @@ export default function MyRosterPage() {
     return (
       <div className="text-center py-12 text-red-500 text-sm">{error}</div>
     );
+
   return (
     <div>
       <PageHeader
@@ -70,10 +72,7 @@ export default function MyRosterPage() {
             <tbody>
               {(assignments ?? []).map((a) => (
                 <React.Fragment key={a.id}>
-                  <tr
-                    key={a.id}
-                    className="border-b border-gray-100 last:border-0 even:bg-gray-50"
-                  >
+                  <tr className="border-b border-gray-100 last:border-0 even:bg-gray-50">
                     <td className="px-4 py-3">{formatDate(a.date)}</td>
                     <td className="px-4 py-3 text-gray-500">
                       {a.locationName}
@@ -85,18 +84,20 @@ export default function MyRosterPage() {
                     <td className="px-4 py-3 text-right">
                       {coveringId === a.id ? (
                         <button
+                          disabled={submitting}
                           onClick={() => {
                             setCoveringId(null);
                             setReason("");
                           }}
-                          className="text-xs text-gray-500 hover:text-black border border-gray-300 rounded px-2 py-1 transition"
+                          className="text-xs text-gray-500 hover:text-black border border-gray-300 rounded px-2 py-1 transition disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           Cancel
                         </button>
                       ) : (
                         <button
+                          disabled={submitting}
                           onClick={() => setCoveringId(a.id)}
-                          className="text-xs text-blue-500 hover:text-blue-700 border border-blue-300 rounded px-2 py-1 transition"
+                          className="text-xs text-blue-500 hover:text-blue-700 border border-blue-300 rounded px-2 py-1 transition disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           Request Cover
                         </button>
@@ -104,23 +105,21 @@ export default function MyRosterPage() {
                     </td>
                   </tr>
                   {coveringId === a.id && (
-                    <tr
-                      key={`cover-${a.id}`}
-                      className="bg-blue-50 border-b border-gray-100"
-                    >
+                    <tr className="bg-blue-50 border-b border-gray-100">
                       <td colSpan={5} className="px-4 py-3">
                         <div className="flex items-center gap-3">
                           <input
                             type="text"
+                            disabled={submitting}
                             placeholder="Reason for cover request..."
                             value={reason}
                             onChange={(e) => setReason(e.target.value)}
-                            className="flex-1 border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+                            className="flex-1 border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-black disabled:bg-gray-100 disabled:cursor-not-allowed"
                           />
                           <button
                             disabled={!reason.trim() || submitting}
                             onClick={() => handleRequestCover(a.id)}
-                            className="bg-black text-white text-sm px-4 py-1.5 rounded-md hover:bg-gray-800 transition disabled:opacity-50"
+                            className="bg-black text-white text-sm px-4 py-1.5 rounded-md hover:bg-gray-800 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
                           >
                             {submitting ? "Submitting..." : "Submit"}
                           </button>

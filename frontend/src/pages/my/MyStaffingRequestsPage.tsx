@@ -10,6 +10,7 @@ import PageHeader from "../../components/PageHeader";
 import StatusBadge from "../../components/StatusBadge";
 import BulkRequestForm, { type BulkRow } from "@/components/BulkRequestForm";
 import { useNavigate } from "react-router-dom";
+
 interface CreateForm {
   locationId: number;
   jobRoleId: number;
@@ -43,10 +44,14 @@ export default function MyStaffingRequestsPage() {
   const { data: jobRoles } = useFetch<JobRole[]>("/api/admin/job-roles");
   const [mode, setMode] = useState<FormMode>("none");
   const [form, setForm] = useState<CreateForm>(emptyForm);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
     try {
       await api.post("/api/my/staffing-requests", form);
       toast.success("Staffing request created");
@@ -55,10 +60,15 @@ export default function MyStaffingRequestsPage() {
       refetch();
     } catch (err: unknown) {
       toast.error(getErrorMessage(err, "Failed to create request"));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleBulkSubmit = async (rows: BulkRow[]) => {
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
     try {
       await api.post("/api/my/staffing-requests/bulk", { requests: rows });
       toast.success("Bulk staffing requests created");
@@ -66,17 +76,24 @@ export default function MyStaffingRequestsPage() {
       refetch();
     } catch (err: unknown) {
       toast.error(getErrorMessage(err, "Failed to create bulk requests"));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleCancel = async (id: number) => {
-    if (!confirm("Cancel this request?")) return;
+  const handleCancel = async (e: React.MouseEvent, id: number) => {
+    e.stopPropagation(); // Stop navigation when clicking Cancel
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
     try {
       await api.delete(`/api/my/staffing-requests/${id}`);
       toast.success("Request cancelled");
       refetch();
-    } catch {
-      toast.error("Failed to cancel request");
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, "Failed to cancel request"));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -85,6 +102,7 @@ export default function MyStaffingRequestsPage() {
     return (
       <div className="text-center py-12 text-red-500 text-sm">{error}</div>
     );
+
   return (
     <div>
       <PageHeader
@@ -123,11 +141,12 @@ export default function MyStaffingRequestsPage() {
             <label className="text-sm font-medium block mb-1">Location</label>
             <select
               required
+              disabled={isSubmitting}
               value={form.locationId}
               onChange={(e) =>
                 setForm({ ...form, locationId: +e.target.value })
               }
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black disabled:bg-gray-100 disabled:cursor-not-allowed"
             >
               <option value={0}>Select location</option>
               {(locations ?? []).map((l) => (
@@ -141,9 +160,10 @@ export default function MyStaffingRequestsPage() {
             <label className="text-sm font-medium block mb-1">Job Role</label>
             <select
               required
+              disabled={isSubmitting}
               value={form.jobRoleId}
               onChange={(e) => setForm({ ...form, jobRoleId: +e.target.value })}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black disabled:bg-gray-100 disabled:cursor-not-allowed"
             >
               <option value={0}>Select job role</option>
               {(jobRoles ?? []).map((r) => (
@@ -158,9 +178,10 @@ export default function MyStaffingRequestsPage() {
             <input
               required
               type="date"
+              disabled={isSubmitting}
               value={form.startDate}
               onChange={(e) => setForm({ ...form, startDate: e.target.value })}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black disabled:bg-gray-100 disabled:cursor-not-allowed"
             />
           </div>
           <div>
@@ -168,9 +189,10 @@ export default function MyStaffingRequestsPage() {
             <input
               required
               type="date"
+              disabled={isSubmitting}
               value={form.endDate}
               onChange={(e) => setForm({ ...form, endDate: e.target.value })}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black disabled:bg-gray-100 disabled:cursor-not-allowed"
             />
           </div>
           <div>
@@ -181,11 +203,12 @@ export default function MyStaffingRequestsPage() {
               required
               type="number"
               min={1}
+              disabled={isSubmitting}
               value={form.requiredCount}
               onChange={(e) =>
                 setForm({ ...form, requiredCount: +e.target.value })
               }
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black disabled:bg-gray-100 disabled:cursor-not-allowed"
             />
           </div>
           <div>
@@ -193,9 +216,10 @@ export default function MyStaffingRequestsPage() {
             <input
               required
               type="time"
+              disabled={isSubmitting}
               value={form.startTime}
               onChange={(e) => setForm({ ...form, startTime: e.target.value })}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black disabled:bg-gray-100 disabled:cursor-not-allowed"
             />
           </div>
           <div>
@@ -203,22 +227,25 @@ export default function MyStaffingRequestsPage() {
             <input
               required
               type="time"
+              disabled={isSubmitting}
               value={form.endTime}
               onChange={(e) => setForm({ ...form, endTime: e.target.value })}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black disabled:bg-gray-100 disabled:cursor-not-allowed"
             />
           </div>
           <div className="col-span-2 flex gap-3">
             <button
               type="submit"
-              className="bg-black text-white text-sm px-4 py-2 rounded-md hover:bg-gray-800 transition"
+              disabled={isSubmitting}
+              className="bg-black text-white text-sm px-4 py-2 rounded-md hover:bg-gray-800 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
-              Submit Request
+              {isSubmitting ? "Submitting..." : "Submit Request"}
             </button>
             <button
               type="button"
+              disabled={isSubmitting}
               onClick={() => setMode("none")}
-              className="text-sm text-gray-500 hover:text-black transition"
+              className="text-sm text-gray-500 hover:text-black transition disabled:opacity-50"
             >
               Cancel
             </button>
@@ -269,11 +296,11 @@ export default function MyStaffingRequestsPage() {
                 <tr
                   key={req.id}
                   onClick={() => navigate(`/staffing-requests/${req.id}`)}
-                  className="border-b border-gray-100 last:border-0 even:bg-gray-50 cursor-pointer hover:bg-gray-50"
+                  className="border-b border-gray-100 last:border-0 even:bg-gray-50 cursor-pointer hover:bg-gray-100 transition"
                 >
                   <td className="px-4 py-3">{req.locationName}</td>
                   <td className="px-4 py-3 text-gray-500">{req.jobRoleName}</td>
-                  <td className="px-4 py-3 text-gray-500">{req.date}</td>
+                  <td className="px-4 py-3 text-gray-500">{formatDate(req.date)}</td>
                   <td className="px-4 py-3 text-gray-500">
                     {req.startTime} - {req.endTime}
                   </td>
@@ -286,8 +313,9 @@ export default function MyStaffingRequestsPage() {
                   <td className="px-4 py-3 text-right">
                     {req.status === "Pending" && (
                       <button
-                        onClick={() => handleCancel(req.id)}
-                        className="text-xs text-red-500 hover:text-red-700 border border-red-300 rounded px-2 py-1 transition"
+                        onClick={(e) => handleCancel(e, req.id)}
+                        disabled={isSubmitting}
+                        className="text-xs text-red-500 hover:text-red-700 border border-red-300 rounded px-2 py-1 transition disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         Cancel
                       </button>

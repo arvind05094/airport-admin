@@ -20,6 +20,7 @@ export default function StaffingRequestsPage() {
     return (
       <div className="text-center py-12 text-red-500 text-sm">{error}</div>
     );
+
   return (
     <div>
       <PageHeader
@@ -63,14 +64,14 @@ export default function StaffingRequestsPage() {
                 <tr
                   key={req.id}
                   onClick={() => navigate(`/staffing-requests/${req.id}`)}
-                  className="border-b border-gray-100 last:border-0 even:bg-gray-50 cursor-pointer hover:bg-gray-50"
+                  className="border-b border-gray-100 last:border-0 even:bg-gray-50 cursor-pointer hover:bg-gray-100 transition"
                 >
                   <td className="px-4 py-3">{req.createdByFullName}</td>
                   <td className="px-4 py-3 text-gray-500">
                     {req.locationName}
                   </td>
                   <td className="px-4 py-3 text-gray-500">{req.jobRoleName}</td>
-                  <td className="px-4 py-3 text-gray-500">{req.date}</td>
+                  <td className="px-4 py-3 text-gray-500">{formatDate(req.date)}</td>
                   <td className="px-4 py-3 text-gray-500">
                     {req.startTime} - {req.endTime}
                   </td>
@@ -86,7 +87,7 @@ export default function StaffingRequestsPage() {
                 </tr>
               ))}
               {(requests ?? []).length === 0 && (
-                <EmptyState colSpan={9} message="No staffing requests found" />
+                <EmptyState colSpan={8} message="No staffing requests found" />
               )}
             </tbody>
           </table>

@@ -14,12 +14,14 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<ShiftAssignment> ShiftAssignments => Set<ShiftAssignment>();
     public DbSet<ConstraintProfile> ConstraintProfiles => Set<ConstraintProfile>();
     public DbSet<StaffAvailability> StaffAvailabilities => Set<StaffAvailability>();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+
+        // Enforce unique email constraint in database
+        modelBuilder.Entity<User>()
+            .HasIndex(u => u.Email)
+            .IsUnique();
+    }
 }
-
-
-
-
-
-
-
-

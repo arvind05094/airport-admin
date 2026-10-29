@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useFetch } from "../hooks/useFetch";
 import type {
@@ -70,17 +71,17 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <QuickLink
             label="My Leaves"
-            href="/my/leaves"
+            to="/my/leaves"
             description="View and manage your leave requests"
           />
           <QuickLink
             label="My Shift Cover"
-            href="/my/shift-cover"
+            to="/my/shift-cover"
             description="View and manage shift cover requests"
           />
           <QuickLink
             label="My Roster"
-            href="/my/roster"
+            to="/my/roster"
             description="View your assigned shifts"
           />
         </div>
@@ -100,20 +101,20 @@ function StatCard({ label, value }: { label: string; value: number }) {
 
 function QuickLink({
   label,
-  href,
+  to,
   description,
 }: {
   label: string;
-  href: string;
+  to: string;
   description: string;
 }) {
   return (
-    <a
-      href={href}
+    <Link
+      to={to}
       className="border border-gray-200 rounded-lg p-5 bg-white hover:border-black transition block"
     >
       <p className="font-medium text-sm">{label}</p>
       <p className="text-xs text-gray-500 mt-1">{description}</p>
-    </a>
+    </Link>
   );
 }

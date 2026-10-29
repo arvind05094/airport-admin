@@ -39,22 +39,44 @@ export default function UsersPage() {
   );
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<CreateForm>(emptyForm);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleCreate = async (e: React.FormEvent) => {
+const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
     try {
       await api.post("/api/admin/users", form);
       toast.success("User created");
       setShowForm(false);
       setForm(emptyForm);
       refetch();
-    } catch {
-      toast.error("Failed to create user");
+    } catch (err: unknown) {
+      // Type guard to safely extract response data from Axios or standard Error objects
+      let message = "";
+
+      if (typeof err === "object" && err !== null && "response" in err) {
+        const axiosError = err as { response?: { data?: { message?: string } } };
+        message = axiosError.response?.data?.message || "";
+      } else if (err instanceof Error) {
+        message = err.message;
+      }
+
+      if (
+        message.toLowerCase().includes("already exists") ||
+        message.toLowerCase().includes("email")
+      ) {
+        toast.error("User with email already exists");
+      } else {
+        toast.error("Failed to create user");
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("Delete this user?")) return;
     try {
       await api.delete(`/api/admin/users/${id}`);
       toast.success("User deleted");
@@ -69,6 +91,7 @@ export default function UsersPage() {
     return (
       <div className="text-center py-12 text-red-500 text-sm">{error}</div>
     );
+
   return (
     <div>
       <PageHeader
@@ -89,9 +112,10 @@ export default function UsersPage() {
             <label className="text-sm font-medium block mb-1">Full Name</label>
             <input
               required
+              disabled={isSubmitting}
               value={form.fullName}
               onChange={(e) => setForm({ ...form, fullName: e.target.value })}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black disabled:bg-gray-100 disabled:cursor-not-allowed"
             />
           </div>
           <div>
@@ -99,9 +123,10 @@ export default function UsersPage() {
             <input
               required
               type="email"
+              disabled={isSubmitting}
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black disabled:bg-gray-100 disabled:cursor-not-allowed"
             />
           </div>
           <div>
@@ -109,17 +134,19 @@ export default function UsersPage() {
             <input
               required
               type="password"
+              disabled={isSubmitting}
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black disabled:bg-gray-100 disabled:cursor-not-allowed"
             />
           </div>
           <div>
             <label className="text-sm font-medium block mb-1">Role</label>
             <select
+              disabled={isSubmitting}
               value={form.role}
               onChange={(e) => setForm({ ...form, role: e.target.value })}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black disabled:bg-gray-100 disabled:cursor-not-allowed"
             >
               <option value="Crew">Crew</option>
               <option value="Manager">Manager</option>
@@ -130,6 +157,7 @@ export default function UsersPage() {
           <div>
             <label className="text-sm font-medium block mb-1">Job Role</label>
             <select
+              disabled={isSubmitting}
               value={form.jobRoleId ?? ""}
               onChange={(e) =>
                 setForm({
@@ -137,7 +165,7 @@ export default function UsersPage() {
                   jobRoleId: e.target.value ? +e.target.value : null,
                 })
               }
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black disabled:bg-gray-100 disabled:cursor-not-allowed"
             >
               <option value="">None</option>
               {(jobRoles ?? []).map((r) => (
@@ -152,6 +180,7 @@ export default function UsersPage() {
               Constraint Profile
             </label>
             <select
+              disabled={isSubmitting}
               value={form.constraintProfileId ?? ""}
               onChange={(e) =>
                 setForm({
@@ -159,7 +188,7 @@ export default function UsersPage() {
                   constraintProfileId: e.target.value ? +e.target.value : null,
                 })
               }
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black disabled:bg-gray-100 disabled:cursor-not-allowed"
             >
               <option value="">None</option>
               {(constraintProfiles ?? []).map((p) => (
@@ -172,9 +201,10 @@ export default function UsersPage() {
           <div className="col-span-2">
             <button
               type="submit"
-              className="bg-black text-white text-sm px-4 py-2 rounded-md hover:bg-gray-800 transition"
+              disabled={isSubmitting}
+              className="bg-black text-white text-sm px-4 py-2 rounded-md hover:bg-gray-800 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
-              Create User
+              {isSubmitting ? "Creating..." : "Create User"}
             </button>
           </div>
         </form>
@@ -204,34 +234,45 @@ export default function UsersPage() {
               </tr>
             </thead>
             <tbody>
-              {(users ?? []).map((user) => (
-                <tr
-                  key={user.id}
-                  className="border-b border-gray-100 last:border-0 even:bg-gray-50"
-                >
-                  <td className="px-4 py-3">{user.fullName}</td>
-                  <td className="px-4 py-3 text-gray-500">{user.email}</td>
-                  <td className="px-4 py-3">
-                    <span className="inline-block border border-gray-300 rounded px-2 py-0.5 text-xs">
-                      {user.role}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-gray-500">
-                    {user.jobRoleName ?? "—"}
-                  </td>
-                  <td className="px-4 py-3 text-gray-500">
-                    {user.constraintProfileName ?? "—"}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <button
-                      onClick={() => handleDelete(user.id)}
-                      className="text-xs text-red-500 hover:text-red-700 border border-red-300 rounded px-2 py-1 transition"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {(users ?? []).map((user) => {
+                const isAdminAccount =
+                  user.email.toLowerCase() === "admin@airportadmin.com";
+
+                return (
+                  <tr
+                    key={user.id}
+                    className="border-b border-gray-100 last:border-0 even:bg-gray-50"
+                  >
+                    <td className="px-4 py-3">{user.fullName}</td>
+                    <td className="px-4 py-3 text-gray-500">{user.email}</td>
+                    <td className="px-4 py-3">
+                      <span className="inline-block border border-gray-300 rounded px-2 py-0.5 text-xs">
+                        {user.role}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-gray-500">
+                      {user.jobRoleName ?? "—"}
+                    </td>
+                    <td className="px-4 py-3 text-gray-500">
+                      {user.constraintProfileName ?? "—"}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <button
+                        onClick={() => handleDelete(user.id)}
+                        disabled={isAdminAccount}
+                        title={
+                          isAdminAccount
+                            ? "Core administrator account cannot be deleted"
+                            : undefined
+                        }
+                        className="text-xs text-red-500 hover:text-red-700 border border-red-300 rounded px-2 py-1 transition disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-red-500"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
               {(users ?? []).length === 0 && (
                 <EmptyState colSpan={6} message="No users found" />
               )}

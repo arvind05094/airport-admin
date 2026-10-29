@@ -42,10 +42,18 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 builder.Services.AddAuthorization();
+var allowedOrigins = builder.Configuration["Cors:AllowedOrigins"]
+    ?.Split(",", StringSplitOptions.RemoveEmptyEntries)
+    ?? new[] { "https://airport-admin.pages.dev", "http://localhost:5173" };
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
-        policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+    {
+        policy.WithOrigins(allowedOrigins)
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
 });
 
 builder.Services.AddScoped<JwtHelper>();
