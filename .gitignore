@@ -6,4 +6,5 @@
 **/node_modules/
 **/dist/
 .render.env
-.env
+.env*
+.env.production
