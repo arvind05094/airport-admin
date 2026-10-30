@@ -14,12 +14,33 @@ Airport Admin is a full-stack workforce management system designed for airport g
 
 *Note: The backend is hosted on a free cloud tier that sleeps when idle; the initial request may take approximately 10 seconds to process.*
 
+---
+
+|                                                   |                                                                                |
+| ------------------------------------------------- | ------------------------------------------------------------------------------ |
+| ![Admin dashboard](docs/screenshot-dashboard.png) | ![Staffing request with generated roster](docs/screenshot-generate-roster.png) |
+| _Admin dashboard_                                 | _A staffing request with its generated roster_                                 |
+
+
+---
+
 ## Core Features
 
 * **Automated Roster Generation:** An intelligent constraint engine processes staffing requests and assigns eligible staff, balancing workloads and respecting daily and weekly hour limits.
 * **Leave & Availability Management:** Staff can submit leave requests and mark specific dates as unavailable, which the scheduling engine automatically bypasses.
 * **Role-Based Access Control:** Distinct views and permission boundaries exist for Admins (organization-wide management), Supervisors, and Crew members (self-service data only).
 * **Shift Coverage:** The system includes integrated workflows for requesting and approving shift cover.
+
+## Architecture
+
+```mermaid
+flowchart TD
+    User([User]) --> SWA[React frontend<br/>Cloudflare Pages]
+    SWA -->|REST + JWT| API[.NET API<br/>Render]
+    API --> Svc[Services<br/>Roster · Leave · Cover]
+    Svc --> PG[(PostgreSQL / Neon)]
+
+```
 
 ## Technology Stack
 
@@ -69,4 +90,4 @@ npm run dev
 Arvind Chauhan
 
 * **LinkedIn:** [linkedin.com/in/arvind-chauhan-dev](https://www.linkedin.com/in/arvind-chauhan-dev/)
-* **Email:** [arvind05094@gmail.com](https://www.google.com/search?q=mailto%3Aarvind05094%40gmail.com)
+* **Email:** [arvind05094@gmail.com](mailto:arvind05094@gmail.com)
